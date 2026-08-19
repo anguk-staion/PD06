@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PLAYDAY - 동료들과 함께 즐길 수 있는 게임 제작!</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.min.css" />
+
+<style>
+/* ══════════════════════════════════════════════════════════════
+   PLAYDAY 06  —  이미지 원본 + 내용 영역만 세로로 늘어나는 구조
+   원본 이미지에서 추출한 값
+     · 패널 좌우 : 다크 0~3.12% / 네온 3.12~3.55% / 민트 3.55~96.45%
+     · 콘텐츠 정렬선 : 좌우 8%
+     · 이미지 비율 : 4168 x 4395  (h/w = 1.0545)
+   ══════════════════════════════════════════════════════════════ */
+:root{
+  --ink:       #061A18;
+  --neon:      #18D76B;
+  --neon-dark: #0F7A41;
+  --btn:       #A7E8C2;
+  --btn-hi:    #C8F2DC;
+  --panel:     #E4EFED;
+  --gold:      #E6D050;
+  --text:      #14201C;
+  --text-sub:  #566963;
+  --line:      #B9D3C9;
+  --font: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+}
+
+*{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{
+  margin:0; padding:0;
+  background:var(--ink);
+  font-family:var(--font);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* ── 배경 슈팅게임 ─────────────────────────────── */
+#sky{ position:fixed; inset:0; width:100%; height:100%; z-index:0; display:block; }
+#scan{
+  position:fixed; inset:0; z-index:1; pointer-events:none;
+  background:repeating-linear-gradient(to bottom, rgba(0,0,0,.16) 0 1px, transparent 1px 3px);
+  opacity:.45;
+}
+#hud{
+  position:fixed; left:16px; top:16px; z-index:3; pointer-events:none;
+  font-family:var(--font); font-size:12px; font-weight:700; letter-spacing:2px;
+  color:var(--neon); text-shadow:0 0 10px rgba(24,215,107,.65); line-height:1.9;
+}
+#hud .sub{ font-size:11px; font-weight:500; color:#7FE0AB; opacity:.7; letter-spacing:1px; }
+#gameToggle{
+  position:fixed; right:16px; bottom:16px; z-index:5;
+  font-family:var(--font); font-size:12px; font-weight:700; letter-spacing:.5px;
+  color:var(--neon); background:rgba(6,26,24,.92);
+  border:2px solid var(--neon); border-radius:0; padding:10px 14px; cursor:pointer;
+}
+#gameToggle:hover{ background:var(--neon); color:#04120D; }
+
+/* ── 스테이지 ─────────────────────────────────── */
+.stage{
+  position:relative; z-index:2;
+  width:100%; max-width:1000px; margin:0 auto;
+  background:var(--ink);
+  box-shadow:0 0 70px 24px rgba(6,26,24,.96);
+}
+
+/* 통이미지 섹션 (01 · 02 · 06) */
+.shot{ position:relative; line-height:0; font-size:0; }
+.shot img{ display:block; width:100%; height:auto; border:0; }
+
+/* 이미지 위 클릭 영역 */
+.hot{
+  position:absolute; display:block; z-index:3;
+  background:transparent; border:0; cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.hot:focus-visible{ outline:3px solid #fff; outline-offset:2px; }
+
+/* ── 늘어나는 카드 (03 · 04 · 05) ───────────────
+   card-top : 이미지 윗부분(머리말/버튼)만 잘라 보여줌
+   card-mid : 원본 패널과 동일한 좌우 구성. 내용만큼 세로로 늘어남
+   card-bot : 이미지 아랫부분(하단 테두리)만 잘라 보여줌       */
+.card{ position:relative; }
+.card-top, .card-bot{
+  position:relative; width:100%; height:0;
+  background-repeat:no-repeat; background-size:100% auto;
+}
+.card-top{ padding-top:var(--h); background-position:0 0;   margin-bottom:-1px; }
+.card-bot{ padding-top:var(--h); background-position:0 100%; margin-top:-1px; }
+
+.card-mid{
+  background-image:
+    linear-gradient(to right,
+      rgba(0,0,0,0) 3.12%,
+      #18D76B 3.12%, #18D76B 3.55%,
+      #E4EFED 3.55%, #E4EFED 96.45%,
+      #18D76B 96.45%, #18D76B 96.88%,
+      rgba(0,0,0,0) 96.88%),
+    linear-gradient(to bottom, #071917 0%, #03201D 45%, #051C1A 100%);
+}
+.card-in{ padding:28px 8% 34px; color:var(--text); }
+
+/* ── 폼 ───────────────────────────────────────── */
+.field{ margin-bottom:26px; }
+.f-label{
+  display:block; font-size:16px; font-weight:800; color:#0F6B3D;
+  margin-bottom:10px; letter-spacing:-.2px;
+}
+.f-label .opt{ font-size:12px; font-weight:500; color:var(--text-sub); margin-left:6px; }
+
+input[type=text]{
+  width:100%; font-family:var(--font); font-size:16px; color:var(--text);
+  background:#fff; border:2px solid var(--line); border-radius:0;
+  padding:13px 15px; outline:none;
+}
+input[type=text]:focus{ border-color:var(--neon); box-shadow:0 0 0 3px rgba(24,215,107,.18); }
+input::placeholder{ color:#9DB2AA; }
+
+.pills{ display:flex; flex-wrap:wrap; gap:8px; }
+.pill{
+  font-family:var(--font); font-size:14px; font-weight:600; color:#2C4038;
+  background:#fff; border:2px solid var(--line); border-radius:0;
+  padding:9px 15px; cursor:pointer; transition:.12s;
+}
+.pill:hover{ border-color:var(--neon); }
+.pill[aria-pressed="true"]{
+  background:var(--neon); border-color:var(--neon); color:#04120D;
+  box-shadow:2px 2px 0 var(--neon-dark);
+}
+
+/* ── 프롬프트 ─────────────────────────────────── */
+.prompt-wrap{ margin-top:34px; }
+.prompt-bar{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  background:#0C1512; border:2px solid var(--neon); border-bottom:0;
+  padding:10px 10px 10px 16px;
+}
+.prompt-bar span{ font-size:13px; font-weight:800; letter-spacing:2px; color:var(--neon); }
+.copy-btn{
+  font-family:var(--font); font-size:13px; font-weight:800;
+  color:#04120D; background:var(--neon); border:0; border-radius:0;
+  padding:10px 15px; cursor:pointer; transition:.12s;
+}
+.copy-btn:hover{ background:var(--btn-hi); }
+.copy-btn.done{ background:var(--gold); }
+#promptOut{
+  display:block; width:100%; min-height:340px; resize:vertical;
+  font-family:'Pretendard', Consolas, monospace;
+  font-size:14px; line-height:1.9; color:#DFF7E9;
+  background:#0C1512; border:2px solid var(--neon); border-top:0;
+  padding:20px 18px; white-space:pre-wrap; outline:none;
+}
+
+/* ── TIP ──────────────────────────────────────── */
+.tip{
+  margin-top:22px; background:#fff;
+  border:2px solid var(--gold); border-left-width:8px; padding:18px 20px;
+}
+.tip h4{ font-size:14px; font-weight:800; letter-spacing:2px; color:#8A7411; margin:0 0 8px; }
+.tip p{ margin:0; font-size:15.5px; line-height:1.7; color:var(--text); }
+.tip mark{ background:#F7E9A0; color:var(--text); padding:1px 4px; }
+
+.tips{ display:grid; gap:16px; }
+.tipcard{ background:#fff; border:2px solid var(--line); padding:20px 22px; }
+.tipcard h4{
+  display:flex; align-items:baseline; gap:10px;
+  font-size:17px; font-weight:800; color:#0F6B3D; margin:0 0 9px; letter-spacing:-.2px;
+}
+.tipcard h4 i{ font-style:normal; font-size:14px; color:var(--neon); letter-spacing:1px; }
+.tipcard p{ margin:0 0 13px; font-size:15px; line-height:1.7; color:var(--text-sub); }
+.say{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  background:#EFF6F3; border-left:4px solid var(--neon); padding:11px 12px;
+}
+.say q{ font-size:14.5px; line-height:1.55; color:var(--text); quotes:'"' '"'; }
+.say button{
+  flex:0 0 auto; font-family:var(--font); font-size:12px; font-weight:800;
+  color:#0B2419; background:var(--btn); border:2px solid var(--neon);
+  padding:8px 11px; cursor:pointer;
+}
+.say button:hover{ background:var(--neon); }
+.say button.done{ background:var(--gold); border-color:var(--gold); }
+
+/* ── 토스트 ───────────────────────────────────── */
+#toast{
+  position:fixed; left:50%; bottom:36px; transform:translate(-50%,20px);
+  z-index:9; opacity:0; pointer-events:none; transition:.22s;
+  font-size:14px; font-weight:700;
+  background:var(--neon); color:#04120D; padding:13px 22px;
+  box-shadow:0 6px 0 var(--neon-dark);
+}
+#toast.show{ opacity:1; transform:translate(-50%,0); }
+
+/* ── 반응형 ───────────────────────────────────── */
+@media (max-width:820px){
+  .card-in{ padding:20px 6% 26px; }
+  .f-label{ font-size:15px; }
+  #promptOut{ font-size:13px; min-height:280px; }
+  #hud{ display:none; }
+  .say{ flex-direction:column; align-items:flex-start; }
+}
+@media (prefers-reduced-motion:reduce){ html{ scroll-behavior:auto; } }
+</style>
+</head>
+
+<body>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+<div id="scan" aria-hidden="true"></div>
+<div id="hud" aria-hidden="true">SCORE <span id="score">000000</span><br><span class="sub">MOVE : MOUSE</span></div>
+<button id="gameToggle" type="button">게임 배경 끄기</button>
+
+<main class="stage">
+
+  <!-- ══ 01. 히어로 ══════════════════════════════ -->
+  <section class="shot">
+    <img src="https://anguk-staion.github.io/pd06/PD06-01.png"
+         alt="PLAYDAY - 동료들과 함께 즐길 수 있는 게임 제작!" />
+  </section>
+
+  <!-- ══ 02. MAIN QUEST ══════════════════════════ -->
+  <section class="shot">
+    <img src="https://anguk-staion.github.io/pd06/PD06-02.png"
+         alt="Main Quest - 당신은 AI를 활용하는 게임 아키텍트입니다. 동료를 구원해 줄 게임을 직접 설계해 주세요." />
+    <a class="hot" href="https://hmap.hdec.co.kr/HMAP/WorkSpace/Main/AiPicture.aspx"
+       target="_blank" rel="noopener" aria-label="A. 우선, 나부터 활력이 필요해"
+       style="left:26.54%; top:63.03%; width:46.92%; height:6.60%;"></a>
+    <a class="hot" href="#step1" aria-label="B. 그래, 게임 제작 시작해보자!"
+       style="left:26.54%; top:72.26%; width:46.92%; height:6.60%;"></a>
+  </section>
+
+  <!-- ══ 03. STEP 1 게임 기획하기 ═════════════════ -->
+  <section class="card" id="step1">
+    <div class="card-top" role="img" aria-label="1. 게임 기획하기 - 만들고 싶은 게임을 자유롭게 적어주세요."
+         style="--h:25.432%; background-image:url('https://anguk-staion.github.io/pd06/PD06-03.png');"></div>
+
+    <div class="card-mid"><div class="card-in">
+
+      <div class="field">
+        <label class="f-label" for="fName">게임 이름</label>
+        <input type="text" id="fName" data-key="name" placeholder="예) 커피 룰렛 챌린지" />
+      </div>
+
+      <div class="field">
+        <label class="f-label" for="fWhen">언제 즐기는 게임인가요?</label>
+        <input type="text" id="fWhen" data-key="when" placeholder="예) 점심 먹고 커피 내기 정할 때" />
+      </div>
+
+      <div class="field">
+        <span class="f-label">게임 방식</span>
+        <div class="pills" data-key="mode">
+          <button type="button" class="pill" aria-pressed="false">뽑기 · 룰렛</button>
+          <button type="button" class="pill" aria-pressed="false">반응속도 대결</button>
+          <button type="button" class="pill" aria-pressed="false">타이밍 맞추기</button>
+          <button type="button" class="pill" aria-pressed="false">기억력 게임</button>
+          <button type="button" class="pill" aria-pressed="false">O/X 퀴즈</button>
+          <button type="button" class="pill" aria-pressed="false">마구 누르기</button>
+          <button type="button" class="pill" aria-pressed="false">피하기 · 슈팅</button>
+          <button type="button" class="pill" aria-pressed="false">슬롯머신</button>
+          <button type="button" class="pill" aria-pressed="false">타자 대결</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="f-label">함께 하는 인원</span>
+        <div class="pills" data-key="people">
+          <button type="button" class="pill" aria-pressed="false">혼자</button>
+          <button type="button" class="pill" aria-pressed="false">2명</button>
+          <button type="button" class="pill" aria-pressed="false">3~5명</button>
+          <button type="button" class="pill" aria-pressed="false">6명 이상</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="f-label" for="fWin">승부는 어떻게 정하나요?</label>
+        <input type="text" id="fWin" data-key="win" placeholder="예) 점수가 가장 낮은 사람이 커피 쏘기" />
+      </div>
+
+      <div class="field">
+        <span class="f-label">화면 분위기</span>
+        <div class="pills" data-key="look">
+          <button type="button" class="pill" aria-pressed="false">8비트 도트</button>
+          <button type="button" class="pill" aria-pressed="false">레트로 오락실</button>
+          <button type="button" class="pill" aria-pressed="false">네온 사이버</button>
+          <button type="button" class="pill" aria-pressed="false">깔끔한 미니멀</button>
+          <button type="button" class="pill" aria-pressed="false">손그림 낙서</button>
+          <button type="button" class="pill" aria-pressed="false">우주 SF</button>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:0;">
+        <label class="f-label" for="fExtra">더 넣고 싶은 것 <span class="opt">비워두어도 됩니다</span></label>
+        <input type="text" id="fExtra" data-key="extra" placeholder="예) 부서 이름이 화면에 나왔으면 좋겠어요" />
+      </div>
+
+      <div class="prompt-wrap">
+        <div class="prompt-bar">
+          <span>PROMPT</span>
+          <button type="button" class="copy-btn" id="copyPrompt">프롬프트 복사하기</button>
+        </div>
+        <textarea id="promptOut" readonly spellcheck="false"></textarea>
+      </div>
+
+    </div></div>
+
+    <div class="card-bot" aria-hidden="true"
+         style="--h:17.635%; background-image:url('https://anguk-staion.github.io/pd06/PD06-03.png');"></div>
+  </section>
+
+  <!-- ══ 04. STEP 2 Copilot 접속하기 ══════════════ -->
+  <section class="card" id="step2">
+    <div class="card-top" role="img" aria-label="2. Copilot 접속하기 - 복사한 프롬프트를 Copilot에 입력하여 결과물을 생성하세요."
+         style="--h:37.428%; background-image:url('https://anguk-staion.github.io/pd06/PD06-04.png');">
+      <a class="hot" href="https://m365.cloud.microsoft/chat/" target="_blank" rel="noopener"
+         aria-label="Copilot 접속하기"
+         style="left:7.97%; top:75.77%; width:84.06%; height:20.77%;"></a>
+    </div>
+
+    <div class="card-mid"><div class="card-in">
+      <div class="tip" style="margin-top:0;">
+        <h4>TIP</h4>
+        <p>기본으로 켜져 있는 '자동' 모드 대신 <mark>GPT 깊이 생각하기</mark>로 바꿔보세요.<br>
+           게임 규칙과 코드를 훨씬 꼼꼼하게 짜줍니다.</p>
+      </div>
+      <div class="tip">
+        <h4>답이 코드로 나오면</h4>
+        <p>받은 코드 전체를 복사해 메모장에 붙여넣고 <mark>파일 이름을 game.html</mark>로 저장하세요.<br>
+           저장한 파일을 더블클릭하면 바로 게임이 실행됩니다.</p>
+      </div>
+    </div></div>
+
+    <div class="card-bot" aria-hidden="true"
+         style="--h:17.635%; background-image:url('https://anguk-staion.github.io/pd06/PD06-04.png');"></div>
+  </section>
+
+  <!-- ══ 05. STEP 3 결과물 다듬기 ═════════════════ -->
+  <section class="card" id="step3">
+    <div class="card-top" role="img" aria-label="3. 결과물 다듬기 - 한 번에 완성되지 않습니다. 고쳐가며 완성해주세요."
+         style="--h:25.432%; background-image:url('https://anguk-staion.github.io/pd06/PD06-05.png');"></div>
+
+    <div class="card-mid"><div class="card-in">
+      <div class="tips">
+
+        <div class="tipcard">
+          <h4><i>01</i>한 번에 하나씩 고치기</h4>
+          <p>여러 가지를 한꺼번에 요청하면 잘 되던 부분까지 망가집니다. 고칠 곳을 하나만 콕 집어 말해주세요.</p>
+          <div class="say"><q>다른 건 그대로 두고, 시작 버튼 색만 노란색으로 바꿔줘.</q><button type="button" class="say-copy">복사</button></div>
+        </div>
+
+        <div class="tipcard">
+          <h4><i>02</i>안 되면 '어떻게' 안 되는지 말하기</h4>
+          <p>"안 돼요"만으로는 고칠 수 없습니다. 무엇을 눌렀을 때 화면이 어떻게 됐는지 그대로 알려주세요.</p>
+          <div class="say"><q>시작 버튼을 눌렀는데 화면이 하얗게만 남고 아무것도 안 나와.</q><button type="button" class="say-copy">복사</button></div>
+        </div>
+
+        <div class="tipcard">
+          <h4><i>03</i>난이도 맞추기</h4>
+          <p>처음 나온 게임은 대부분 너무 쉽거나 너무 어렵습니다. 직접 해보고 체감으로 조절하세요.</p>
+          <div class="say"><q>너무 빨리 끝나. 한 판이 20초쯤 걸리게 속도를 늦춰줘.</q><button type="button" class="say-copy">복사</button></div>
+        </div>
+
+        <div class="tipcard">
+          <h4><i>04</i>휴대폰에서도 되는지 확인하기</h4>
+          <p>동료들은 대부분 휴대폰으로 열어봅니다. 터치가 되는지, 글씨가 잘리지 않는지 꼭 확인하세요.</p>
+          <div class="say"><q>휴대폰 세로 화면에서도 버튼이 안 잘리게 크기를 맞춰줘.</q><button type="button" class="say-copy">복사</button></div>
+        </div>
+
+        <div class="tipcard">
+          <h4><i>05</i>결과 화면에 재미를 몰아주기</h4>
+          <p>사람들이 가장 오래 보는 건 결과 화면입니다. 여기가 화려하면 반응이 확 달라집니다.</p>
+          <div class="say"><q>끝나면 당첨자 이름을 크게 띄우고 색종이 날리는 효과를 넣어줘.</q><button type="button" class="say-copy">복사</button></div>
+        </div>
+
+        <div class="tipcard">
+          <h4><i>06</i>마지막엔 전체 코드 다시 받기</h4>
+          <p>여러 번 고치면 바뀐 부분만 알려주는 경우가 많습니다. 마무리는 항상 전체 코드로 받아두세요.</p>
+          <div class="say"><q>지금까지 고친 내용을 모두 합쳐서 HTML 코드 전체를 다시 줘.</q><button type="button" class="say-copy">복사</button></div>
+        </div>
+
+      </div>
+    </div></div>
+
+    <div class="card-bot" aria-hidden="true"
+         style="--h:17.635%; background-image:url('https://anguk-staion.github.io/pd06/PD06-05.png');"></div>
+  </section>
+
+  <!-- ══ 06. STEP 4 게임 업로드 ═══════════════════ -->
+  <section class="shot" id="step4">
+    <img src="https://anguk-staion.github.io/pd06/PD06-06.png"
+         alt="4. 게임 업로드 - 만들어진 게임 결과물(HTML)을 갤러리에 공유해주세요. 제출기한 '26년 7월 3일" />
+    <a class="hot" href="https://hmap.hdec.co.kr/HMAP/WorkSpace/Main/AiPicture.aspx"
+       target="_blank" rel="noopener" aria-label="Playday Gallery 이동"
+       style="left:7.97%; top:26.87%; width:84.06%; height:7.42%;"></a>
+  </section>
+
+</main>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ══════════ 1. 프롬프트 생성기 ══════════ */
+(function(){
+  var out = document.getElementById('promptOut');
+  var state = { name:'', when:'', mode:'', people:'', win:'', look:'', extra:'' };
+  var ph = { name:'커피 룰렛 챌린지', when:'점심 먹고 커피 내기 정할 때', mode:'뽑기 · 룰렛',
+             people:'3~5명', win:'점수가 가장 낮은 사람이 커피 쏘기', look:'8비트 도트' };
+  function v(k){ return state[k] ? state[k] : (ph[k] || ''); }
+
+  function build(){
+    var extra = state.extra ? '\n[꼭 넣고 싶은 것] ' + state.extra : '';
+    return [
+'너는 브라우저에서 바로 실행되는 미니게임을 만드는 게임 개발자야.',
+'아래 조건에 맞는 게임을 HTML 파일 하나로 완성해 줘.',
+'',
+'[게임 이름] ' + v('name'),
+'[즐기는 상황] ' + v('when'),
+'[게임 방식] ' + v('mode'),
+'[함께 하는 인원] ' + v('people'),
+'[승부 결정] ' + v('win'),
+'[화면 분위기] ' + v('look') + extra,
+'',
+'[꼭 지켜야 할 것]',
+'1. HTML, CSS, JavaScript를 한 파일에 담고 외부 라이브러리 없이 혼자 실행되게 만들어 줘.',
+'2. 설명서를 읽지 않아도 시작 버튼만 누르면 바로 이해되게 만들어 줘.',
+'3. 한 판이 30초 안에 끝나서 회의 직전에도 가볍게 즐길 수 있게 해 줘.',
+'4. 규칙은 시작 화면에 세 줄 이내로 보여 줘.',
+'5. 결과 화면에 승자와 순위를 크게 띄우고 다시하기 버튼을 넣어 줘.',
+'6. PC 마우스와 휴대폰 터치에서 모두 동작하게 만들어 줘.',
+'7. 화면 분위기에 맞춰 색과 글꼴을 정하고, 소리 대신 화면 움직임으로 반응을 표현해 줘.',
+'8. 사무실에서 함께 보기 때문에 과격하거나 민망한 표현은 넣지 말아 줘.',
+'',
+'완성된 HTML 코드 전체를 코드블록 하나로 출력해 줘.'
+    ].join('\n');
+  }
+  function render(){ out.value = build(); }
+
+  document.querySelectorAll('input[data-key]').forEach(function(el){
+    el.addEventListener('input', function(){ state[el.dataset.key] = el.value.trim(); render(); });
+  });
+  document.querySelectorAll('.pills[data-key]').forEach(function(group){
+    group.addEventListener('click', function(e){
+      var btn = e.target.closest('.pill'); if(!btn) return;
+      var on = btn.getAttribute('aria-pressed') === 'true';
+      group.querySelectorAll('.pill').forEach(function(b){ b.setAttribute('aria-pressed','false'); });
+      state[group.dataset.key] = on ? '' : btn.textContent.trim();
+      if(!on) btn.setAttribute('aria-pressed','true');
+      render();
+    });
+  });
+  render();
+
+  function copyText(text){
+    if(navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+    return new Promise(function(res, rej){
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.cssText = 'position:fixed;top:-9999px;opacity:0;';
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); res(); }catch(err){ rej(err); }
+      document.body.removeChild(ta);
+    });
+  }
+  var toast = document.getElementById('toast'), timer;
+  function say(msg){
+    toast.textContent = msg; toast.classList.add('show');
+    clearTimeout(timer); timer = setTimeout(function(){ toast.classList.remove('show'); }, 1800);
+  }
+
+  var cp = document.getElementById('copyPrompt');
+  cp.addEventListener('click', function(){
+    copyText(out.value).then(function(){
+      cp.textContent = '복사 완료!'; cp.classList.add('done'); say('프롬프트를 복사했습니다');
+      setTimeout(function(){ cp.textContent = '프롬프트 복사하기'; cp.classList.remove('done'); }, 1800);
+    }).catch(function(){
+      out.removeAttribute('readonly'); out.select(); say('Ctrl+C를 눌러 복사해주세요');
+    });
+  });
+  document.querySelectorAll('.say-copy').forEach(function(b){
+    b.addEventListener('click', function(){
+      copyText(b.parentElement.querySelector('q').textContent).then(function(){
+        b.textContent = '완료'; b.classList.add('done'); say('문장을 복사했습니다');
+        setTimeout(function(){ b.textContent = '복사'; b.classList.remove('done'); }, 1500);
+      });
+    });
+  });
+})();
+
+
+/* ══════════ 2. 배경 슈팅게임 (1945 STRIKER) ══════════ */
+(function(){
+  var cvs = document.getElementById('sky'), ctx = cvs.getContext('2d');
+  var toggle = document.getElementById('gameToggle'), scoreEl = document.getElementById('score');
+  var W=0, H=0, DPR=1, running=true, raf=null, t=0, score=0;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var player = { x:0, y:0, tx:0, ty:0, cool:0 };
+  var bullets=[], enemies=[], parts=[], waves=[], isles=[];
+
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    cvs.width = W*DPR; cvs.height = H*DPR;
+    cvs.style.width = W+'px'; cvs.style.height = H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.imageSmoothingEnabled = false;
+    if(!player.x){ player.x = player.tx = W*0.5; player.y = player.ty = H*0.72; }
+  }
+  window.addEventListener('resize', resize); resize();
+
+  for(var i=0;i<70;i++) waves.push({ x:Math.random(), y:Math.random(), w:6+Math.random()*22, s:.35+Math.random()*.9 });
+  function spawnIsle(){
+    isles.push({ x:Math.random(), y:-.25, w:40+Math.random()*140, h:30+Math.random()*90, s:.16+Math.random()*.12 });
+    if(isles.length>7) isles.shift();
+  }
+  for(var j=0;j<5;j++){ spawnIsle(); isles[isles.length-1].y = Math.random(); }
+
+  function px(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h)); }
+
+  function drawPlayer(x,y,s){
+    px(x-1.5*s, y-5*s,  3*s, 10*s, '#DDE9E4');
+    px(x-6*s,   y-0.5*s, 12*s, 2.5*s, '#B4C7C0');
+    px(x-6*s,   y+2*s,   2*s, 1.5*s, '#7F9A90');
+    px(x+4*s,   y+2*s,   2*s, 1.5*s, '#7F9A90');
+    px(x-3.5*s, y+3.5*s, 7*s, 2*s,   '#B4C7C0');
+    px(x-1.5*s, y-2.5*s, 3*s, 2.5*s, '#18D76B');
+    px(x-1*s,   y+5*s,   2*s, 2*s,   'rgba(24,215,107,.85)');
+    if(t % 8 < 4) px(x-0.5*s, y+6.5*s, 1*s, 2*s, 'rgba(230,208,80,.9)');
+  }
+  function drawEnemy(e){
+    var s=e.s, c1 = e.big ? '#E6D050' : '#6FBF95', c2 = e.big ? '#A38F1C' : '#2F6D4E';
+    px(e.x-1.5*s, e.y-4*s,   3*s, 9*s,   c1);
+    px(e.x-5*s,   e.y-1*s,   10*s, 2.5*s, c2);
+    px(e.x-3*s,   e.y-4.5*s, 6*s, 1.5*s, c2);
+    px(e.x-1*s,   e.y+1*s,   2*s, 2*s,   '#0B1211');
+  }
+  function spawnEnemy(){
+    var big = Math.random() < 0.16;
+    enemies.push({ x:40+Math.random()*(W-80), y:-40, s:big?4.5:3,
+                   vy:(big?.9:1.5)+Math.random()*.9, amp:Math.random()*1.6,
+                   ph:Math.random()*6.28, hp:big?4:1, big:big });
+  }
+  function boom(x,y,n,col){
+    for(var i=0;i<n;i++) parts.push({ x:x, y:y, vx:(Math.random()-.5)*4.5, vy:(Math.random()-.5)*4.5,
+                                      life:18+Math.random()*16, s:2+Math.random()*3, c:col });
+    if(parts.length>260) parts.splice(0, parts.length-260);
+  }
+
+  function step(){
+    t++;
+    var g = ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#04100E'); g.addColorStop(.55,'#08211C'); g.addColorStop(1,'#04100E');
+    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+
+    if(t % 150 === 0) spawnIsle();
+    for(var k=isles.length-1;k>=0;k--){
+      var il = isles[k]; il.y += il.s/H*6;
+      if(il.y > 1.3){ isles.splice(k,1); continue; }
+      px(il.x*W-il.w/2, il.y*H, il.w, il.h, 'rgba(19,58,45,.55)');
+      px(il.x*W-il.w/2+6, il.y*H+6, il.w*.6, il.h*.5, 'rgba(28,80,60,.5)');
+    }
+    for(var w0=0;w0<waves.length;w0++){
+      var wv = waves[w0]; wv.y += wv.s/H*2.4;
+      if(wv.y > 1){ wv.y = -0.02; wv.x = Math.random(); }
+      px(wv.x*W, wv.y*H, wv.w, 2, 'rgba(120,220,175,.10)');
+    }
+
+    player.x += (player.tx-player.x)*0.16;
+    player.y += (player.ty-player.y)*0.16;
+    drawPlayer(player.x, player.y, 3.2);
+
+    if(--player.cool <= 0){
+      bullets.push({x:player.x-5, y:player.y-14});
+      bullets.push({x:player.x+5, y:player.y-14});
+      player.cool = 9;
+    }
+    for(var b=bullets.length-1;b>=0;b--){
+      var bl = bullets[b]; bl.y -= 11;
+      if(bl.y < -20){ bullets.splice(b,1); continue; }
+      px(bl.x-1.5, bl.y, 3, 11, '#DFF7E9');
+      px(bl.x-1.5, bl.y+3, 3, 8, '#18D76B');
+    }
+
+    if(t % 34 === 0 && enemies.length < 13) spawnEnemy();
+    for(var e0=enemies.length-1;e0>=0;e0--){
+      var en = enemies[e0];
+      en.y += en.vy; en.x += Math.sin((t+en.ph*30)/34)*en.amp;
+      if(en.y > H+50){ enemies.splice(e0,1); continue; }
+      drawEnemy(en);
+      for(var b2=bullets.length-1;b2>=0;b2--){
+        var bb = bullets[b2];
+        if(Math.abs(bb.x-en.x) < en.s*5 && Math.abs(bb.y-en.y) < en.s*5){
+          bullets.splice(b2,1); en.hp--; boom(en.x,en.y,4,'#DFF7E9');
+          if(en.hp <= 0){
+            boom(en.x,en.y, en.big?26:14, en.big?'#E6D050':'#18D76B');
+            score += en.big?500:100; enemies.splice(e0,1);
+          }
+          break;
+        }
+      }
+    }
+    for(var p=parts.length-1;p>=0;p--){
+      var pt = parts[p];
+      pt.x += pt.vx; pt.y += pt.vy; pt.vy += .07; pt.life--;
+      if(pt.life <= 0){ parts.splice(p,1); continue; }
+      ctx.globalAlpha = Math.max(0, pt.life/30);
+      px(pt.x, pt.y, pt.s, pt.s, pt.c);
+      ctx.globalAlpha = 1;
+    }
+    scoreEl.textContent = ('000000'+score).slice(-6);
+    raf = requestAnimationFrame(step);
+  }
+
+  window.addEventListener('pointermove', function(e){
+    player.tx = Math.max(24, Math.min(W-24, e.clientX));
+    player.ty = Math.max(H*0.18, Math.min(H-40, e.clientY));
+  }, { passive:true });
+
+  function start(){
+    if(raf) return;
+    running = true; cvs.style.display='block';
+    document.getElementById('hud').style.display='';
+    toggle.textContent = '게임 배경 끄기';
+    raf = requestAnimationFrame(step);
+  }
+  function stop(){
+    running = false;
+    if(raf){ cancelAnimationFrame(raf); raf=null; }
+    ctx.clearRect(0,0,W,H); cvs.style.display='none';
+    document.getElementById('hud').style.display='none';
+    toggle.textContent = '게임 배경 켜기';
+  }
+  toggle.addEventListener('click', function(){ running ? stop() : start(); });
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden && raf){ cancelAnimationFrame(raf); raf=null; }
+    else if(!document.hidden && running && !raf){ raf = requestAnimationFrame(step); }
+  });
+
+  if(reduce || window.innerWidth < 860) stop(); else start();
+})();
+</script>
+</body>
+</html>
