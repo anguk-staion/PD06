@@ -4,12 +4,15 @@ animated (84).webp
 
 # 웹용으로 변환한 원본 — 실제로 쓰는 건 .webp 쪽
 # (원본을 교체했다면 아래 명령으로 .webp 를 다시 만들 것)
-#   ffmpeg -y -i wallpaper.png       -c:v libwebp -quality 85 wallpaper.webp
+#   ffmpeg -y -i wallpaper2.png      -c:v libwebp -quality 85 wallpaper2.webp
 #   ffmpeg -y -i player.png -vf scale=320:-1:flags=neighbor -c:v libwebp -quality 90 player.webp
 #   ffmpeg -y -i 이미지/PD06-01.png  -c:v libwebp -quality 88 이미지/PD06-01.webp
-wallpaper.png
+wallpaper2.png
 player.png
 이미지/PD06-01.png
+
+# 안 쓰게 된 이전 배경 (wallpaper2 로 교체)
+wallpaper.png
 
 # 아직 페이지에서 쓰지 않는 소스 아트 (쓰게 되면 이 줄을 지울 것)
 head.png
