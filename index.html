@@ -46,19 +46,37 @@ body{
   background:repeating-linear-gradient(to bottom, rgba(0,0,0,.16) 0 1px, transparent 1px 3px);
   opacity:.45;
 }
+/* ── 아케이드 HUD (본문 오른쪽) ────────────────── */
 #hud{
-  position:fixed; left:16px; top:16px; z-index:3; pointer-events:none;
-  font-family:var(--font); font-size:12px; font-weight:700; letter-spacing:2px;
-  color:var(--neon); text-shadow:0 0 10px rgba(24,215,107,.65); line-height:1.9;
+  display:none;               /* 본문 옆에 자리가 있을 때만 표시 (아래 미디어쿼리) */
+  position:fixed; top:18px; z-index:3; pointer-events:none;
+  width:132px;
+  font-family:ui-monospace,'Consolas','Menlo',monospace;
+  font-size:12px; font-weight:700; letter-spacing:1px; line-height:1.6;
+  color:#DCEEF7; text-shadow:0 0 8px rgba(10,58,92,.9), 0 1px 0 #02121F;
 }
-#hud .sub{ font-size:11px; font-weight:500; color:#7FE0AB; opacity:.7; letter-spacing:1px; }
-#gameToggle{
-  position:fixed; right:16px; bottom:16px; z-index:5;
-  font-family:var(--font); font-size:12px; font-weight:700; letter-spacing:.5px;
-  color:var(--neon); background:rgba(6,26,24,.92);
-  border:2px solid var(--neon); border-radius:0; padding:10px 14px; cursor:pointer;
+#hud .row{ display:flex; justify-content:space-between; align-items:baseline; }
+#hud .k{ color:#8FC4E4; font-weight:500; font-size:10px; letter-spacing:2px; }
+#hud .v{ color:#FFF3C4; font-size:14px; }
+#hud .v.stage{ color:#FF9E45; }
+#hud .blk{ margin-top:10px; }
+#hud .gauge{
+  margin-top:4px; height:9px; width:100%;
+  background:rgba(3,24,40,.85); border:1px solid #2E6A90; box-shadow:0 0 8px rgba(10,58,92,.8);
 }
-#gameToggle:hover{ background:var(--neon); color:#04120D; }
+#hud .gauge i{
+  display:block; height:100%; width:20%;
+  background:linear-gradient(to right,#18D76B,#B9F24D,#FFE066);
+  transition:width .18s;
+}
+#hud .sub{
+  margin-top:12px; font-size:9px; font-weight:500;
+  color:#6FA6C6; opacity:.75; letter-spacing:2px;
+}
+/* 본문(최대 1000px) 바로 오른쪽 여백에 붙여서 표시 */
+@media (min-width:1320px){
+  #hud{ display:block; left:calc(50% + 516px); }
+}
 
 /* ── 스테이지 ─────────────────────────────────── */
 .stage{
@@ -211,8 +229,14 @@ input::placeholder{ color:#9DB2AA; }
 
 <canvas id="sky" aria-hidden="true"></canvas>
 <div id="scan" aria-hidden="true"></div>
-<div id="hud" aria-hidden="true">SCORE <span id="score">000000</span><br><span class="sub">MOVE : MOUSE</span></div>
-<button id="gameToggle" type="button">게임 배경 끄기</button>
+<div id="hud" aria-hidden="true">
+  <div class="row"><span class="k">1P</span><span class="v" id="score">000000</span></div>
+  <div class="row blk"><span class="k">STAGE</span><span class="v stage" id="stage">1-1</span></div>
+  <div class="row blk"><span class="k">POWER</span><span class="v" id="plv">Lv1</span></div>
+  <div class="gauge"><i id="pbar"></i></div>
+  <div class="row blk"><span class="k">BOMB</span><span class="v" id="bomb">2</span></div>
+  <div class="sub">MOVE : MOUSE</div>
+</div>
 
 <main class="stage">
 
@@ -492,11 +516,18 @@ input::placeholder{ color:#9DB2AA; }
 /* ══════════ 2. 배경 슈팅게임 (1945 STRIKER) ══════════ */
 (function(){
   var cvs = document.getElementById('sky'), ctx = cvs.getContext('2d');
-  var toggle = document.getElementById('gameToggle'), scoreEl = document.getElementById('score');
+  var hudEl   = document.getElementById('hud'),
+      scoreEl = document.getElementById('score'),
+      stageEl = document.getElementById('stage'),
+      plvEl   = document.getElementById('plv'),
+      pbarEl  = document.getElementById('pbar'),
+      bombEl  = document.getElementById('bomb');
   var W=0, H=0, DPR=1, running=true, raf=null, t=0, score=0;
+  var MAXLV=5, pw=1, bombs=2, flash=0;
+  var MONO = "ui-monospace,'Consolas','Menlo',monospace";
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var player = { x:0, y:0, tx:0, ty:0, cool:0 };
-  var bullets=[], enemies=[], parts=[], waves=[], isles=[];
+  var bullets=[], ebullets=[], enemies=[], parts=[], waves=[], isles=[], items=[];
 
   function resize(){
     DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -509,7 +540,8 @@ input::placeholder{ color:#9DB2AA; }
   }
   window.addEventListener('resize', resize); resize();
 
-  for(var i=0;i<70;i++) waves.push({ x:Math.random(), y:Math.random(), w:6+Math.random()*22, s:.35+Math.random()*.9 });
+  for(var i=0;i<95;i++) waves.push({ x:Math.random(), y:Math.random(), w:6+Math.random()*26,
+                                     s:.35+Math.random()*.9, br:Math.random()<.3 });
   function spawnIsle(){
     isles.push({ x:Math.random(), y:-.25, w:40+Math.random()*140, h:30+Math.random()*90, s:.16+Math.random()*.12 });
     if(isles.length>7) isles.shift();
@@ -528,18 +560,71 @@ input::placeholder{ color:#9DB2AA; }
     px(x-1*s,   y+5*s,   2*s, 2*s,   'rgba(24,215,107,.85)');
     if(t % 8 < 4) px(x-0.5*s, y+6.5*s, 1*s, 2*s, 'rgba(230,208,80,.9)');
   }
+  /* 대형기 = 플라잉윙 폭격기 / 소형기 = 흰색 전투기 (1945 스타일) */
   function drawEnemy(e){
-    var s=e.s, c1 = e.big ? '#E6D050' : '#6FBF95', c2 = e.big ? '#A38F1C' : '#2F6D4E';
-    px(e.x-1.5*s, e.y-4*s,   3*s, 9*s,   c1);
-    px(e.x-5*s,   e.y-1*s,   10*s, 2.5*s, c2);
-    px(e.x-3*s,   e.y-4.5*s, 6*s, 1.5*s, c2);
-    px(e.x-1*s,   e.y+1*s,   2*s, 2*s,   '#0B1211');
+    var s=e.s;
+    if(e.big){
+      px(e.x-9*s,   e.y-1*s,   18*s, 3*s,   '#8FA3B0');
+      px(e.x-6*s,   e.y-3.5*s, 12*s, 2.5*s, '#6E838F');
+      px(e.x-2*s,   e.y-5.5*s,  4*s, 4.5*s, '#B7C6CF');
+      px(e.x-9*s,   e.y+2*s,   18*s, 1.5*s, '#46586A');
+      px(e.x-1*s,   e.y+0.5*s,  2*s, 2*s,   '#0A1620');
+      px(e.x-7*s,   e.y+3.5*s,  2*s, 1.5*s, 'rgba(255,158,69,.9)');
+      px(e.x+5*s,   e.y+3.5*s,  2*s, 1.5*s, 'rgba(255,158,69,.9)');
+    }else{
+      px(e.x-1.5*s, e.y-4*s,    3*s, 9*s,   '#D6E2EA');
+      px(e.x-5*s,   e.y-1*s,   10*s, 2.5*s, '#96A9B6');
+      px(e.x-3*s,   e.y-4.5*s,  6*s, 1.5*s, '#96A9B6');
+      px(e.x-4*s,   e.y+3.5*s,  8*s, 1.5*s, '#7C8E9B');
+      px(e.x-1*s,   e.y+1*s,    2*s, 2*s,   '#0A1620');
+      px(e.x-0.5*s, e.y+5*s,    1*s, 2*s,   'rgba(255,158,69,.85)');
+    }
+  }
+  /* 무기강화 · 폭탄 아이템 */
+  function drawItem(it){
+    var on = (t % 26) < 13;
+    var base = it.kind === 'P' ? (on ? '#18D76B' : '#0D7A40') : (on ? '#FF9E45' : '#9E5417');
+    px(it.x-9, it.y-8, 18, 16, base);
+    px(it.x-7, it.y-6, 14, 12, '#04141F');
+    ctx.fillStyle = on ? '#EAFBF2' : base;
+    ctx.font = 'bold 11px ' + MONO;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(it.kind, it.x, it.y+1);
+    ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
   }
   function spawnEnemy(){
     var big = Math.random() < 0.16;
     enemies.push({ x:40+Math.random()*(W-80), y:-40, s:big?4.5:3,
                    vy:(big?.9:1.5)+Math.random()*.9, amp:Math.random()*1.6,
-                   ph:Math.random()*6.28, hp:big?4:1, big:big });
+                   ph:Math.random()*6.28, hp:big?4:1, big:big,
+                   fc:60+Math.random()*70 });
+  }
+  /* 파워 레벨별 탄 패턴 : [x오프셋, 좌우속도] */
+  var PATTERN = [
+    [[0,0]],
+    [[-5,0],[5,0]],
+    [[-6,0],[0,0],[6,0]],
+    [[-7,0],[-3,-.9],[3,.9],[7,0]],
+    [[-8,0],[-4,-1.1],[0,0],[4,1.1],[8,0]]
+  ];
+  function shoot(){
+    var pat = PATTERN[Math.min(pw, MAXLV)-1];
+    for(var i=0;i<pat.length;i++)
+      bullets.push({ x:player.x+pat[i][0], y:player.y-14, vx:pat[i][1] });
+  }
+  function useBomb(){
+    if(bombs <= 0) return;
+    bombs--; flash = 18;
+    for(var i=enemies.length-1;i>=0;i--){
+      boom(enemies[i].x, enemies[i].y, 20, '#FFE066');
+      score += enemies[i].big ? 500 : 100;
+      enemies.splice(i,1);
+    }
+    ebullets.length = 0;
+  }
+  function stageLabel(){
+    var n = Math.floor(score/2500);
+    return (1 + Math.floor(n/4)) + '-' + (1 + (n%4));
   }
   function boom(x,y,n,col){
     for(var i=0;i<n;i++) parts.push({ x:x, y:y, vx:(Math.random()-.5)*4.5, vy:(Math.random()-.5)*4.5,
@@ -549,21 +634,23 @@ input::placeholder{ color:#9DB2AA; }
 
   function step(){
     t++;
+    /* ── 푸른 바다 배경 ── */
     var g = ctx.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#04100E'); g.addColorStop(.55,'#08211C'); g.addColorStop(1,'#04100E');
+    g.addColorStop(0,'#031A2E'); g.addColorStop(.5,'#0A3E63'); g.addColorStop(1,'#04223A');
     ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
 
     if(t % 150 === 0) spawnIsle();
     for(var k=isles.length-1;k>=0;k--){
       var il = isles[k]; il.y += il.s/H*6;
       if(il.y > 1.3){ isles.splice(k,1); continue; }
-      px(il.x*W-il.w/2, il.y*H, il.w, il.h, 'rgba(19,58,45,.55)');
-      px(il.x*W-il.w/2+6, il.y*H+6, il.w*.6, il.h*.5, 'rgba(28,80,60,.5)');
+      px(il.x*W-il.w/2,    il.y*H,    il.w,     il.h,     'rgba(8,42,68,.60)');   /* 수심 그림자 */
+      px(il.x*W-il.w/2+5,  il.y*H+5,  il.w*.74, il.h*.62, 'rgba(26,80,112,.55)'); /* 얕은 여울 */
+      px(il.x*W-il.w/2+14, il.y*H+12, il.w*.40, il.h*.32, 'rgba(120,140,120,.35)'); /* 모래섬 */
     }
     for(var w0=0;w0<waves.length;w0++){
       var wv = waves[w0]; wv.y += wv.s/H*2.4;
       if(wv.y > 1){ wv.y = -0.02; wv.x = Math.random(); }
-      px(wv.x*W, wv.y*H, wv.w, 2, 'rgba(120,220,175,.10)');
+      px(wv.x*W, wv.y*H, wv.w, 2, wv.br ? 'rgba(200,240,255,.16)' : 'rgba(140,205,240,.09)');
     }
 
     player.x += (player.tx-player.x)*0.16;
@@ -571,12 +658,11 @@ input::placeholder{ color:#9DB2AA; }
     drawPlayer(player.x, player.y, 3.2);
 
     if(--player.cool <= 0){
-      bullets.push({x:player.x-5, y:player.y-14});
-      bullets.push({x:player.x+5, y:player.y-14});
-      player.cool = 9;
+      shoot();
+      player.cool = Math.max(5, 10-pw);
     }
     for(var b=bullets.length-1;b>=0;b--){
-      var bl = bullets[b]; bl.y -= 11;
+      var bl = bullets[b]; bl.y -= 11; bl.x += bl.vx;
       if(bl.y < -20){ bullets.splice(b,1); continue; }
       px(bl.x-1.5, bl.y, 3, 11, '#DFF7E9');
       px(bl.x-1.5, bl.y+3, 3, 8, '#18D76B');
@@ -588,16 +674,51 @@ input::placeholder{ color:#9DB2AA; }
       en.y += en.vy; en.x += Math.sin((t+en.ph*30)/34)*en.amp;
       if(en.y > H+50){ enemies.splice(e0,1); continue; }
       drawEnemy(en);
+
+      /* 대형기는 자기 탄을 쏜다 */
+      if(en.big && en.y > 0 && --en.fc <= 0){
+        en.fc = 70 + Math.random()*60;
+        var dx = player.x-en.x, dy = player.y-en.y, d = Math.sqrt(dx*dx+dy*dy)||1;
+        ebullets.push({ x:en.x, y:en.y+12, vx:dx/d*2.1, vy:dy/d*2.1 });
+      }
+
       for(var b2=bullets.length-1;b2>=0;b2--){
         var bb = bullets[b2];
         if(Math.abs(bb.x-en.x) < en.s*5 && Math.abs(bb.y-en.y) < en.s*5){
           bullets.splice(b2,1); en.hp--; boom(en.x,en.y,4,'#DFF7E9');
           if(en.hp <= 0){
             boom(en.x,en.y, en.big?26:14, en.big?'#E6D050':'#18D76B');
-            score += en.big?500:100; enemies.splice(e0,1);
+            score += en.big?500:100;
+            /* 아이템 드랍 — 대형기는 항상, 소형기는 가끔 */
+            if(en.big)                    items.push({x:en.x, y:en.y, vy:1.15, kind: Math.random()<.35?'B':'P'});
+            else if(Math.random() < .08)  items.push({x:en.x, y:en.y, vy:1.15, kind:'P'});
+            enemies.splice(e0,1);
           }
           break;
         }
+      }
+      /* 적기가 너무 가까우면 폭탄 자동 발동 (배열이 비워지므로 즉시 루프 종료) */
+      if(bombs > 0 && Math.abs(en.x-player.x) < 34 && Math.abs(en.y-player.y) < 34){ useBomb(); break; }
+    }
+
+    /* 적 탄 */
+    for(var eb0=ebullets.length-1;eb0>=0;eb0--){
+      var eb = ebullets[eb0]; eb.x += eb.vx; eb.y += eb.vy;
+      if(eb.y > H+20 || eb.x < -20 || eb.x > W+20){ ebullets.splice(eb0,1); continue; }
+      px(eb.x-2.5, eb.y-2.5, 6, 6, '#FF7A2F');
+      px(eb.x-1,   eb.y-1,   3, 3, '#FFE066');
+    }
+
+    /* 아이템 */
+    for(var q=items.length-1;q>=0;q--){
+      var it = items[q];
+      it.y += it.vy; it.x += Math.sin((t+q*23)/38)*.7;
+      if(it.y > H+30){ items.splice(q,1); continue; }
+      drawItem(it);
+      if(Math.abs(it.x-player.x) < 26 && Math.abs(it.y-player.y) < 26){
+        if(it.kind === 'P'){ if(pw < MAXLV) pw++; }
+        else               { bombs = Math.min(bombs+1, 5); }
+        score += 200; boom(it.x, it.y, 12, '#FFE066'); items.splice(q,1);
       }
     }
     for(var p=parts.length-1;p>=0;p--){
@@ -608,7 +729,20 @@ input::placeholder{ color:#9DB2AA; }
       px(pt.x, pt.y, pt.s, pt.s, pt.c);
       ctx.globalAlpha = 1;
     }
-    scoreEl.textContent = ('000000'+score).slice(-6);
+    /* 폭탄 섬광 */
+    if(flash > 0){
+      flash--;
+      ctx.fillStyle = 'rgba(255,242,200,'+(flash/40)+')';
+      ctx.fillRect(0,0,W,H);
+    }
+
+    if(t % 6 === 0){
+      scoreEl.textContent = ('000000'+score).slice(-6);
+      stageEl.textContent = stageLabel();
+      plvEl.textContent   = 'Lv'+pw;
+      pbarEl.style.width  = (pw/MAXLV*100)+'%';
+      bombEl.textContent  = bombs;
+    }
     raf = requestAnimationFrame(step);
   }
 
@@ -620,18 +754,15 @@ input::placeholder{ color:#9DB2AA; }
   function start(){
     if(raf) return;
     running = true; cvs.style.display='block';
-    document.getElementById('hud').style.display='';
-    toggle.textContent = '게임 배경 끄기';
+    hudEl.style.display = '';
     raf = requestAnimationFrame(step);
   }
   function stop(){
     running = false;
     if(raf){ cancelAnimationFrame(raf); raf=null; }
     ctx.clearRect(0,0,W,H); cvs.style.display='none';
-    document.getElementById('hud').style.display='none';
-    toggle.textContent = '게임 배경 켜기';
+    hudEl.style.display = 'none';
   }
-  toggle.addEventListener('click', function(){ running ? stop() : start(); });
   document.addEventListener('visibilitychange', function(){
     if(document.hidden && raf){ cancelAnimationFrame(raf); raf=null; }
     else if(!document.hidden && running && !raf){ raf = requestAnimationFrame(step); }
