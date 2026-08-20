@@ -1,6 +1,21 @@
 # 디자인 원본 (웹사이트에 필요 없음)
-PD06.ai
+*.ai
 animated (84).webp
+
+# 웹용으로 변환한 원본 — 실제로 쓰는 건 .webp 쪽
+# (원본을 교체했다면 아래 명령으로 .webp 를 다시 만들 것)
+#   ffmpeg -y -i wallpaper.png       -c:v libwebp -quality 85 wallpaper.webp
+#   ffmpeg -y -i player.png -vf scale=320:-1:flags=neighbor -c:v libwebp -quality 90 player.webp
+#   ffmpeg -y -i 이미지/PD06-01.png  -c:v libwebp -quality 88 이미지/PD06-01.webp
+wallpaper.png
+player.png
+이미지/PD06-01.png
+
+# 아직 페이지에서 쓰지 않는 소스 아트 (쓰게 되면 이 줄을 지울 것)
+head.png
+head2.png
+Creating_commander.png
+이미지/PD06.png
 
 # OS / 편집기 생성 파일
 Thumbs.db

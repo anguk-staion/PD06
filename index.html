@@ -10,13 +10,15 @@
 <style>
 /* ══════════════════════════════════════════════════════════════
    PLAYDAY 06  —  이미지 원본 + 내용 영역만 세로로 늘어나는 구조
-   원본 이미지에서 추출한 값
-     · 패널 좌우 : 다크 0~3.12% / 네온 3.12~3.55% / 민트 3.55~96.45%
+   원본 이미지(2026-08-20 교체본)에서 실측한 값
+     · 프레임 좌우 : 투명 0~3.143% / 네온 3.143~3.527% / 민트 3.551~96.449%
+                     / 네온 96.449~96.833% / 투명 96.833~100%
+     · 02~06 은 바깥 여백이 투명 → 뒤의 wallpaper.png + 슈팅게임 캔버스가 그대로 비침
      · 콘텐츠 정렬선 : 좌우 8%
-     · 이미지 비율 : 4168 x 4395  (h/w = 1.0545)
+     · 이미지 비율 : 01) 4167x2997  02) 4167x2983  03~06) 4168x3780 (h/w = 0.9069)
    ══════════════════════════════════════════════════════════════ */
 :root{
-  --ink:       #061A18;
+  --sea:       #1B4E7C;   /* wallpaper 평균 바다색 — 배경 로딩 전 대체색 */
   --neon:      #18D76B;
   --neon-dark: #0F7A41;
   --btn:       #A7E8C2;
@@ -33,27 +35,44 @@
 html{ scroll-behavior:smooth; }
 body{
   margin:0; padding:0;
-  background:var(--ink);
+  background:var(--sea);
   font-family:var(--font);
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
 }
 
-/* ── 배경 슈팅게임 ─────────────────────────────── */
-#sky{ position:fixed; inset:0; width:100%; height:100%; z-index:0; display:block; }
+/* ── 배경 레이어 ───────────────────────────────
+   0 wallpaper  →  1 슈팅게임 캔버스  →  2 스캔라인  →  3 본문  →  4 HUD
+   02~06 이미지는 바깥 여백이 투명이라 이 배경이 그대로 비쳐 하나의 게임 화면처럼 이어진다. */
+#bg{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    linear-gradient(rgba(2,16,34,.22), rgba(2,16,34,.42)),
+    url('wallpaper.webp') center center / cover no-repeat,
+    var(--sea);
+}
+#sky{ position:fixed; inset:0; width:100%; height:100%; z-index:1; display:block; }
 #scan{
-  position:fixed; inset:0; z-index:1; pointer-events:none;
+  position:fixed; inset:0; z-index:2; pointer-events:none;
   background:repeating-linear-gradient(to bottom, rgba(0,0,0,.16) 0 1px, transparent 1px 3px);
   opacity:.45;
 }
 /* ── 아케이드 HUD (본문 오른쪽) ────────────────── */
 #hud{
   display:none;               /* 본문 옆에 자리가 있을 때만 표시 (아래 미디어쿼리) */
-  position:fixed; top:18px; z-index:3; pointer-events:none;
-  width:132px;
+  position:fixed; top:18px; z-index:4; pointer-events:none;
+  width:150px; padding:12px 13px 11px;
+  /* 밝은 하늘 위에서도 읽히도록 반투명 콘솔 패널 */
+  background:rgba(3,20,38,.66);
+  border:1px solid rgba(126,196,236,.40);
+  box-shadow:0 6px 22px rgba(2,14,28,.45);
   font-family:ui-monospace,'Consolas','Menlo',monospace;
   font-size:12px; font-weight:700; letter-spacing:1px; line-height:1.6;
-  color:#DCEEF7; text-shadow:0 0 8px rgba(10,58,92,.9), 0 1px 0 #02121F;
+  color:#EAF6FD; text-shadow:0 1px 2px rgba(2,14,28,.9);
+}
+#hud .pilot{
+  display:block; width:100%; height:auto; margin:0 0 11px;
+  image-rendering:pixelated;   /* 픽셀아트 초상화 — 뭉개지지 않게 */
 }
 #hud .row{ display:flex; justify-content:space-between; align-items:baseline; }
 #hud .k{ color:#8FC4E4; font-weight:500; font-size:10px; letter-spacing:2px; }
@@ -80,10 +99,11 @@ body{
 
 /* ── 스테이지 ─────────────────────────────────── */
 .stage{
-  position:relative; z-index:2;
+  position:relative; z-index:3;
   width:100%; max-width:1000px; margin:0 auto;
-  background:var(--ink);
-  box-shadow:0 0 70px 24px rgba(6,26,24,.96);
+  /* 배경 없음 — 02~06 이미지의 투명 여백으로 #bg(wallpaper)와 캔버스가 그대로 비친다 */
+  background:transparent;
+  box-shadow:0 0 80px 26px rgba(2,18,38,.55);
 }
 
 /* 통이미지 섹션 (01 · 02 · 06) */
@@ -110,15 +130,16 @@ body{
 .card-top{ padding-top:var(--h); background-position:0 0;   margin-bottom:-1px; }
 .card-bot{ padding-top:var(--h); background-position:0 100%; margin-top:-1px; }
 
+/* 원본 이미지의 좌우 구성을 그대로 재현. 바깥쪽은 투명하게 두어
+   .stage 배경(=02 이미지와 같은 딥틸)이 위아래 이미지와 이어지게 한다. */
 .card-mid{
   background-image:
     linear-gradient(to right,
-      rgba(0,0,0,0) 3.12%,
-      #18D76B 3.12%, #18D76B 3.55%,
-      #E4EFED 3.55%, #E4EFED 96.45%,
-      #18D76B 96.45%, #18D76B 96.88%,
-      rgba(0,0,0,0) 96.88%),
-    linear-gradient(to bottom, #071917 0%, #03201D 45%, #051C1A 100%);
+      transparent 3.143%,
+      var(--neon) 3.143%, var(--neon) 3.527%,
+      var(--panel) 3.551%, var(--panel) 96.449%,
+      var(--neon) 96.449%, var(--neon) 96.833%,
+      transparent 96.833%);
 }
 .card-in{ padding:28px 8% 34px; color:var(--text); }
 
@@ -227,9 +248,11 @@ input::placeholder{ color:#9DB2AA; }
 
 <body>
 
+<div id="bg" aria-hidden="true"></div>
 <canvas id="sky" aria-hidden="true"></canvas>
 <div id="scan" aria-hidden="true"></div>
 <div id="hud" aria-hidden="true">
+  <img class="pilot" src="player.webp" alt="" />
   <div class="row"><span class="k">1P</span><span class="v" id="score">000000</span></div>
   <div class="row blk"><span class="k">STAGE</span><span class="v stage" id="stage">1-1</span></div>
   <div class="row blk"><span class="k">POWER</span><span class="v" id="plv">Lv1</span></div>
@@ -242,7 +265,7 @@ input::placeholder{ color:#9DB2AA; }
 
   <!-- ══ 01. 히어로 ══════════════════════════════ -->
   <section class="shot">
-    <img src="이미지/PD06-01.png"
+    <img src="이미지/PD06-01.webp"
          alt="PLAYDAY - 동료들과 함께 즐길 수 있는 게임 제작!" />
   </section>
 
@@ -260,7 +283,7 @@ input::placeholder{ color:#9DB2AA; }
   <!-- ══ 03. STEP 1 게임 기획하기 ═════════════════ -->
   <section class="card" id="step1">
     <div class="card-top" role="img" aria-label="1. 게임 기획하기 - 만들고 싶은 게임을 자유롭게 적어주세요."
-         style="--h:25.432%; background-image:url('이미지/PD06-03.png');"></div>
+         style="--h:20.42%; background-image:url('이미지/PD06-03.png');"></div>
 
     <div class="card-mid"><div class="card-in">
 
@@ -332,13 +355,13 @@ input::placeholder{ color:#9DB2AA; }
     </div></div>
 
     <div class="card-bot" aria-hidden="true"
-         style="--h:17.635%; background-image:url('이미지/PD06-03.png');"></div>
+         style="--h:4.68%; background-image:url('이미지/PD06-03.png');"></div>
   </section>
 
   <!-- ══ 04. STEP 2 Copilot 접속하기 ══════════════ -->
   <section class="card" id="step2">
     <div class="card-top" role="img" aria-label="2. Copilot 접속하기 - 복사한 프롬프트를 Copilot에 입력하여 결과물을 생성하세요."
-         style="--h:37.428%; background-image:url('이미지/PD06-04.png');">
+         style="--h:33.28%; background-image:url('이미지/PD06-04.png');">
       <a class="hot" href="https://m365.cloud.microsoft/chat/" target="_blank" rel="noopener"
          aria-label="Copilot 접속하기"
          style="left:7.97%; top:75.77%; width:84.06%; height:20.77%;"></a>
@@ -358,13 +381,13 @@ input::placeholder{ color:#9DB2AA; }
     </div></div>
 
     <div class="card-bot" aria-hidden="true"
-         style="--h:17.635%; background-image:url('이미지/PD06-04.png');"></div>
+         style="--h:4.68%; background-image:url('이미지/PD06-04.png');"></div>
   </section>
 
   <!-- ══ 05. STEP 3 결과물 다듬기 ═════════════════ -->
   <section class="card" id="step3">
     <div class="card-top" role="img" aria-label="3. 결과물 다듬기 - 한 번에 완성되지 않습니다. 고쳐가며 완성해주세요."
-         style="--h:25.432%; background-image:url('이미지/PD06-05.png');"></div>
+         style="--h:20.42%; background-image:url('이미지/PD06-05.png');"></div>
 
     <div class="card-mid"><div class="card-in">
       <div class="tips">
@@ -409,7 +432,7 @@ input::placeholder{ color:#9DB2AA; }
     </div></div>
 
     <div class="card-bot" aria-hidden="true"
-         style="--h:17.635%; background-image:url('이미지/PD06-05.png');"></div>
+         style="--h:4.68%; background-image:url('이미지/PD06-05.png');"></div>
   </section>
 
   <!-- ══ 06. STEP 4 게임 업로드 ═══════════════════ -->
@@ -527,7 +550,7 @@ input::placeholder{ color:#9DB2AA; }
   var MONO = "ui-monospace,'Consolas','Menlo',monospace";
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var player = { x:0, y:0, tx:0, ty:0, cool:0 };
-  var bullets=[], ebullets=[], enemies=[], parts=[], waves=[], isles=[], items=[];
+  var bullets=[], ebullets=[], enemies=[], parts=[], waves=[], items=[];
 
   function resize(){
     DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -536,21 +559,61 @@ input::placeholder{ color:#9DB2AA; }
     cvs.style.width = W+'px'; cvs.style.height = H+'px';
     ctx.setTransform(DPR,0,0,DPR,0,0);
     ctx.imageSmoothingEnabled = false;
-    if(!player.x){ player.x = player.tx = W*0.5; player.y = player.ty = H*0.72; }
+    /* 본문(최대 1000px)이 화면 가운데를 덮으므로, 시작 위치는 왼쪽 여백에 둔다 */
+    if(!player.x){
+      player.x = player.tx = Math.max(40, Math.min(W*0.5, (W-1000)/2 * 0.55));
+      player.y = player.ty = H*0.72;
+    }
   }
   window.addEventListener('resize', resize); resize();
 
   for(var i=0;i<95;i++) waves.push({ x:Math.random(), y:Math.random(), w:6+Math.random()*26,
                                      s:.35+Math.random()*.9, br:Math.random()<.3 });
-  function spawnIsle(){
-    isles.push({ x:Math.random(), y:-.25, w:40+Math.random()*140, h:30+Math.random()*90, s:.16+Math.random()*.12 });
-    if(isles.length>7) isles.shift();
-  }
-  for(var j=0;j<5;j++){ spawnIsle(); isles[isles.length-1].y = Math.random(); }
 
   function px(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h)); }
 
+  /* ── 비행기 스프라이트 (Airplanes.png) ──
+     원본은 기수가 위를 향한 1장. 적기는 180° 돌리고, 대형기는 붉게 물들여 구분한다.
+     로드 전에는 아래의 픽셀 드로잉으로 대체된다. */
+  var SPR = new Image(), sprUp=null, sprDn=null, sprBig=null, sprRatio=1;
+  /* 원본이 381px 라 매 프레임 1/10 로 줄이면 계단이 심하다.
+     표시 크기의 2배(레티나 기준 1:1)로 미리 축소해 두고 그 뒤엔 그대로 얹는다. */
+  function variant(deg, tint, w){
+    var h = Math.round(w * SPR.height / SPR.width);
+    var c = document.createElement('canvas'); c.width = w; c.height = h;
+    var g = c.getContext('2d');
+    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+    g.translate(w/2, h/2); g.rotate(deg*Math.PI/180);
+    g.drawImage(SPR, -w/2, -h/2, w, h);
+    if(tint){
+      g.setTransform(1,0,0,1,0,0);
+      g.globalCompositeOperation = 'source-atop';
+      g.fillStyle = tint; g.fillRect(0,0,w,h);
+    }
+    return c;
+  }
+  SPR.onload = function(){
+    sprRatio = SPR.height / SPR.width;
+    sprUp  = variant(0,   null, 96);                      /* 플레이어   표시 48px */
+    sprDn  = variant(180, null, 80);                      /* 소형 적기  표시 39px */
+    sprBig = variant(180, 'rgba(206,58,38,.42)', 148);    /* 대형 적기  표시 72px */
+  };
+  SPR.src = 'Airplanes.png';
+
+  /* 화면폭 w 로 스프라이트를 중앙 정렬해 그린다 */
+  function blit(img, x, y, w){
+    var h = w * sprRatio;
+    ctx.drawImage(img, Math.round(x-w/2), Math.round(y-h/2), Math.round(w), Math.round(h));
+    return h;
+  }
+
   function drawPlayer(x,y,s){
+    if(sprUp){
+      var h = blit(sprUp, x, y, 15*s);
+      if(t % 8 < 4) px(x-1.2*s, y+h/2-3, 2.4*s, 5, 'rgba(255,206,90,.95)');
+      px(x-0.6*s, y+h/2-1, 1.2*s, 7, 'rgba(255,160,60,.75)');
+      return;
+    }
     px(x-1.5*s, y-5*s,  3*s, 10*s, '#DDE9E4');
     px(x-6*s,   y-0.5*s, 12*s, 2.5*s, '#B4C7C0');
     px(x-6*s,   y+2*s,   2*s, 1.5*s, '#7F9A90');
@@ -563,6 +626,10 @@ input::placeholder{ color:#9DB2AA; }
   /* 대형기 = 플라잉윙 폭격기 / 소형기 = 흰색 전투기 (1945 스타일) */
   function drawEnemy(e){
     var s=e.s;
+    if(sprDn){
+      blit(e.big ? sprBig : sprDn, e.x, e.y, (e.big ? 16 : 13) * s);
+      return;
+    }
     if(e.big){
       px(e.x-9*s,   e.y-1*s,   18*s, 3*s,   '#8FA3B0');
       px(e.x-6*s,   e.y-3.5*s, 12*s, 2.5*s, '#6E838F');
@@ -609,8 +676,8 @@ input::placeholder{ color:#9DB2AA; }
   ];
   function shoot(){
     var pat = PATTERN[Math.min(pw, MAXLV)-1];
-    for(var i=0;i<pat.length;i++)
-      bullets.push({ x:player.x+pat[i][0], y:player.y-14, vx:pat[i][1] });
+    for(var i=0;i<pat.length;i++)   /* -22 = 스프라이트 기수 위치 */
+      bullets.push({ x:player.x+pat[i][0], y:player.y-22, vx:pat[i][1] });
   }
   function useBomb(){
     if(bombs <= 0) return;
@@ -634,23 +701,14 @@ input::placeholder{ color:#9DB2AA; }
 
   function step(){
     t++;
-    /* ── 푸른 바다 배경 ── */
-    var g = ctx.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#031A2E'); g.addColorStop(.5,'#0A3E63'); g.addColorStop(1,'#04223A');
-    ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+    /* 배경은 #bg 의 wallpaper.png 가 담당한다 — 캔버스는 비우고 그 위에 그린다 */
+    ctx.clearRect(0,0,W,H);
 
-    if(t % 150 === 0) spawnIsle();
-    for(var k=isles.length-1;k>=0;k--){
-      var il = isles[k]; il.y += il.s/H*6;
-      if(il.y > 1.3){ isles.splice(k,1); continue; }
-      px(il.x*W-il.w/2,    il.y*H,    il.w,     il.h,     'rgba(8,42,68,.60)');   /* 수심 그림자 */
-      px(il.x*W-il.w/2+5,  il.y*H+5,  il.w*.74, il.h*.62, 'rgba(26,80,112,.55)'); /* 얕은 여울 */
-      px(il.x*W-il.w/2+14, il.y*H+12, il.w*.40, il.h*.32, 'rgba(120,140,120,.35)'); /* 모래섬 */
-    }
+    /* 비행 속도감을 주는 흰 포말 줄기만 남긴다 */
     for(var w0=0;w0<waves.length;w0++){
       var wv = waves[w0]; wv.y += wv.s/H*2.4;
       if(wv.y > 1){ wv.y = -0.02; wv.x = Math.random(); }
-      px(wv.x*W, wv.y*H, wv.w, 2, wv.br ? 'rgba(200,240,255,.16)' : 'rgba(140,205,240,.09)');
+      px(wv.x*W, wv.y*H, wv.w, 2, wv.br ? 'rgba(235,250,255,.20)' : 'rgba(200,232,252,.10)');
     }
 
     player.x += (player.tx-player.x)*0.16;
@@ -682,9 +740,11 @@ input::placeholder{ color:#9DB2AA; }
         ebullets.push({ x:en.x, y:en.y+12, vx:dx/d*2.1, vy:dy/d*2.1 });
       }
 
+      /* 피격 범위 — 스프라이트 크기에 맞춘 값 */
+      var hx = en.s * (en.big ? 7.5 : 6), hy = en.s * (en.big ? 7 : 5.5);
       for(var b2=bullets.length-1;b2>=0;b2--){
         var bb = bullets[b2];
-        if(Math.abs(bb.x-en.x) < en.s*5 && Math.abs(bb.y-en.y) < en.s*5){
+        if(Math.abs(bb.x-en.x) < hx && Math.abs(bb.y-en.y) < hy){
           bullets.splice(b2,1); en.hp--; boom(en.x,en.y,4,'#DFF7E9');
           if(en.hp <= 0){
             boom(en.x,en.y, en.big?26:14, en.big?'#E6D050':'#18D76B');
