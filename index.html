@@ -207,25 +207,25 @@ body{
 }
 .f-label .opt{ font-size:12px; font-weight:500; color:var(--text-sub); margin-left:6px; }
 
-input[type=text]{
-  width:100%; font-family:var(--font); font-size:16px; color:var(--text);
+input[type=text], .field textarea{
+  display:block; width:100%; font-family:var(--font); font-size:16px; color:var(--text);
   background:#fff; border:2px solid var(--line); border-radius:0;
   padding:13px 15px; outline:none;
 }
-input[type=text]:focus{ border-color:var(--neon); box-shadow:0 0 0 3px rgba(24,215,107,.18); }
-input::placeholder{ color:#9DB2AA; }
+.field textarea{ line-height:1.65; resize:vertical; }
+input[type=text]:focus, .field textarea:focus{
+  border-color:var(--neon); box-shadow:0 0 0 3px rgba(24,215,107,.18);
+}
+input::placeholder, textarea::placeholder{ color:#9DB2AA; }
 
-.pills{ display:flex; flex-wrap:wrap; gap:8px; }
-.pill{
-  font-family:var(--font); font-size:14px; font-weight:600; color:#2C4038;
-  background:#fff; border:2px solid var(--line); border-radius:0;
-  padding:9px 15px; cursor:pointer; transition:.12s;
+/* 무엇을 적어야 하는지 알려주는 안내 (예전의 선택 버튼들을 설명으로 옮긴 것) */
+.f-help{
+  margin:-2px 0 10px; padding:12px 14px;
+  background:#EFF6F3; border-left:4px solid var(--neon);
 }
-.pill:hover{ border-color:var(--neon); }
-.pill[aria-pressed="true"]{
-  background:var(--neon); border-color:var(--neon); color:#04120D;
-  box-shadow:2px 2px 0 var(--neon-dark);
-}
+.f-help p{ margin:0 0 5px; font-size:13.5px; line-height:1.6; color:var(--text-sub); }
+.f-help p:last-child{ margin-bottom:0; }
+.f-help b{ color:#0F6B3D; font-weight:800; }
 
 /* ── 프롬프트 ─────────────────────────────────── */
 .prompt-wrap{ margin-top:34px; }
@@ -358,55 +358,24 @@ input::placeholder{ color:#9DB2AA; }
       </div>
 
       <div class="field">
-        <label class="f-label" for="fWhen">언제 즐기는 게임인가요?</label>
-        <input type="text" id="fWhen" data-key="when" placeholder="예) 점심 먹고 커피 내기 정할 때" />
-      </div>
-
-      <div class="field">
-        <span class="f-label">게임 방식</span>
-        <div class="pills" data-key="mode">
-          <button type="button" class="pill" aria-pressed="false">뽑기 · 룰렛</button>
-          <button type="button" class="pill" aria-pressed="false">반응속도 대결</button>
-          <button type="button" class="pill" aria-pressed="false">타이밍 맞추기</button>
-          <button type="button" class="pill" aria-pressed="false">기억력 게임</button>
-          <button type="button" class="pill" aria-pressed="false">O/X 퀴즈</button>
-          <button type="button" class="pill" aria-pressed="false">마구 누르기</button>
-          <button type="button" class="pill" aria-pressed="false">피하기 · 슈팅</button>
-          <button type="button" class="pill" aria-pressed="false">슬롯머신</button>
-          <button type="button" class="pill" aria-pressed="false">타자 대결</button>
+        <label class="f-label" for="fMode">게임 방식에 대해서 설명해주세요</label>
+        <div class="f-help">
+          <p><b>이런 것들을 담아주세요</b> — 언제 즐기는 게임인지 · 어떤 방식인지 · 몇 명이 함께 하는지 · 승부를 어떻게 정하는지</p>
+          <p><b>방식 예시</b> 뽑기·룰렛 / 반응속도 대결 / 타이밍 맞추기 / 기억력 게임 / O·X 퀴즈 / 마구 누르기 / 피하기·슈팅 / 슬롯머신 / 타자 대결</p>
+          <p><b>인원 예시</b> 혼자 / 2명 / 3~5명 / 6명 이상</p>
         </div>
-      </div>
-
-      <div class="field">
-        <span class="f-label">함께 하는 인원</span>
-        <div class="pills" data-key="people">
-          <button type="button" class="pill" aria-pressed="false">혼자</button>
-          <button type="button" class="pill" aria-pressed="false">2명</button>
-          <button type="button" class="pill" aria-pressed="false">3~5명</button>
-          <button type="button" class="pill" aria-pressed="false">6명 이상</button>
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="f-label" for="fWin">승부는 어떻게 정하나요?</label>
-        <input type="text" id="fWin" data-key="win" placeholder="예) 점수가 가장 낮은 사람이 커피 쏘기" />
-      </div>
-
-      <div class="field">
-        <span class="f-label">화면 분위기</span>
-        <div class="pills" data-key="look">
-          <button type="button" class="pill" aria-pressed="false">8비트 도트</button>
-          <button type="button" class="pill" aria-pressed="false">레트로 오락실</button>
-          <button type="button" class="pill" aria-pressed="false">네온 사이버</button>
-          <button type="button" class="pill" aria-pressed="false">깔끔한 미니멀</button>
-          <button type="button" class="pill" aria-pressed="false">손그림 낙서</button>
-          <button type="button" class="pill" aria-pressed="false">우주 SF</button>
-        </div>
+        <textarea id="fMode" data-key="mode" rows="5"
+          placeholder="예) 점심 먹고 커피 내기를 정할 때 3~5명이 함께 하는 게임이야.&#10;순서대로 룰렛을 돌려서 나온 점수를 모으고, 점수가 가장 낮은 사람이 커피를 쏘는 방식이야.&#10;한 사람당 세 번씩 돌릴 수 있게 해줘."></textarea>
       </div>
 
       <div class="field" style="margin-bottom:0;">
-        <label class="f-label" for="fExtra">더 넣고 싶은 것 <span class="opt">비워두어도 됩니다</span></label>
-        <input type="text" id="fExtra" data-key="extra" placeholder="예) 부서 이름이 화면에 나왔으면 좋겠어요" />
+        <label class="f-label" for="fLook">게임 디자인</label>
+        <div class="f-help">
+          <p><b>이런 것들을 담아주세요</b> — 화면 분위기 · 색감 · 꼭 넣고 싶은 것</p>
+          <p><b>분위기 예시</b> 8비트 도트 / 레트로 오락실 / 네온 사이버 / 깔끔한 미니멀 / 손그림 낙서 / 우주 SF</p>
+        </div>
+        <textarea id="fLook" data-key="look" rows="5"
+          placeholder="예) 8비트 도트 느낌으로, 오락실 게임 화면처럼 만들어줘.&#10;초록색을 메인으로 쓰고, 결과 화면에 부서 이름이 크게 나왔으면 좋겠어."></textarea>
       </div>
 
       <div class="prompt-wrap">
@@ -516,23 +485,30 @@ input::placeholder{ color:#9DB2AA; }
 /* ══════════ 1. 프롬프트 생성기 ══════════ */
 (function(){
   var out = document.getElementById('promptOut');
-  var state = { name:'', when:'', mode:'', people:'', win:'', look:'', extra:'' };
-  var ph = { name:'커피 룰렛 챌린지', when:'점심 먹고 커피 내기 정할 때', mode:'뽑기 · 룰렛',
-             people:'3~5명', win:'점수가 가장 낮은 사람이 커피 쏘기', look:'8비트 도트' };
+  var state = { name:'', mode:'', look:'' };
+  /* 비워두면 이 예시가 대신 들어간다 — 입력칸 placeholder 와 같은 내용 */
+  var ph = {
+    name: '커피 룰렛 챌린지',
+    mode: '점심 먹고 커피 내기를 정할 때 3~5명이 함께 하는 게임이야.\n' +
+          '순서대로 룰렛을 돌려서 나온 점수를 모으고, 점수가 가장 낮은 사람이 커피를 쏘는 방식이야.\n' +
+          '한 사람당 세 번씩 돌릴 수 있게 해줘.',
+    look: '8비트 도트 느낌으로, 오락실 게임 화면처럼 만들어줘.\n' +
+          '초록색을 메인으로 쓰고, 결과 화면에 부서 이름이 크게 나왔으면 좋겠어.'
+  };
   function v(k){ return state[k] ? state[k] : (ph[k] || ''); }
 
   function build(){
-    var extra = state.extra ? '\n[꼭 넣고 싶은 것] ' + state.extra : '';
     return [
 '너는 브라우저에서 바로 실행되는 미니게임을 만드는 게임 개발자야.',
 '아래 조건에 맞는 게임을 HTML 파일 하나로 완성해 줘.',
 '',
 '[게임 이름] ' + v('name'),
-'[즐기는 상황] ' + v('when'),
-'[게임 방식] ' + v('mode'),
-'[함께 하는 인원] ' + v('people'),
-'[승부 결정] ' + v('win'),
-'[화면 분위기] ' + v('look') + extra,
+'',
+'[게임 방식]',
+v('mode'),
+'',
+'[게임 디자인]',
+v('look'),
 '',
 '[꼭 지켜야 할 것]',
 '1. HTML, CSS, JavaScript를 한 파일에 담고 외부 라이브러리 없이 혼자 실행되게 만들어 줘.',
@@ -552,18 +528,8 @@ input::placeholder{ color:#9DB2AA; }
   }
   function render(){ out.value = build(); }
 
-  document.querySelectorAll('input[data-key]').forEach(function(el){
+  document.querySelectorAll('input[data-key], textarea[data-key]').forEach(function(el){
     el.addEventListener('input', function(){ state[el.dataset.key] = el.value.trim(); render(); });
-  });
-  document.querySelectorAll('.pills[data-key]').forEach(function(group){
-    group.addEventListener('click', function(e){
-      var btn = e.target.closest('.pill'); if(!btn) return;
-      var on = btn.getAttribute('aria-pressed') === 'true';
-      group.querySelectorAll('.pill').forEach(function(b){ b.setAttribute('aria-pressed','false'); });
-      state[group.dataset.key] = on ? '' : btn.textContent.trim();
-      if(!on) btn.setAttribute('aria-pressed','true');
-      render();
-    });
   });
   render();
 
