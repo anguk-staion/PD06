@@ -219,14 +219,6 @@ input[type=text]:focus, .field textarea:focus{
 input::placeholder, textarea::placeholder{ color:#9DB2AA; }
 
 /* 무엇을 적어야 하는지 알려주는 안내 (예전의 선택 버튼들을 설명으로 옮긴 것) */
-.f-help{
-  margin:-2px 0 10px; padding:12px 14px;
-  background:#EFF6F3; border-left:4px solid var(--neon);
-}
-.f-help p{ margin:0 0 5px; font-size:13.5px; line-height:1.6; color:var(--text-sub); }
-.f-help p:last-child{ margin-bottom:0; }
-.f-help b{ color:#0F6B3D; font-weight:800; }
-.f-help .opt{ font-size:12px; font-weight:500; color:var(--text-sub); margin-left:5px; }
 
 .pills{ display:flex; flex-wrap:wrap; gap:8px; }
 .pills + textarea{ margin-top:10px; }   /* 알약 버튼 아래 서술형 칸 */
@@ -382,11 +374,8 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
       </div>
 
       <div class="field">
-        <label class="f-label" for="fMode">게임 방식</label>
-        <div class="f-help">
-          <p><b>이런 것들을 담아주세요</b> <span class="opt">비워두어도 됩니다</span><br>
-             언제 즐기는 게임인지 · 어떻게 진행되는지 · 승부를 어떻게 정하는지</p>
-        </div>
+        <label class="f-label" for="fMode">게임 방식
+          <span class="opt">언제 즐기는 게임인지 · 어떻게 진행되는지 · 승부를 어떻게 정하는지</span></label>
         <textarea id="fMode" data-key="mode" rows="5"
           placeholder="예) 점심 먹고 커피 내기를 정할 때 하는 게임이야.&#10;순서대로 룰렛을 돌려서 나온 점수를 모으고, 점수가 가장 낮은 사람이 커피를 쏘는 방식이야."></textarea>
       </div>
@@ -437,19 +426,6 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
         <img src="이미지/gpt.jpg" loading="lazy"
              alt="Copilot 모델 선택 메뉴에서 GPT 5.6 Think deeper를 고른 화면" />
       </div>
-      <div class="tip">
-        <h4>TIP · 그림도 같이 주기</h4>
-        <p>배경화면이나 캐릭터를 <mark>이미지로 먼저 만들어</mark> 대화창에 첨부해 보세요.
-           말로만 설명할 때보다 원하는 화면에 훨씬 가깝게 나옵니다.<br>
-           "첨부한 그림을 배경으로 쓰고, 이 캐릭터가 움직이게 해 줘"처럼 함께 적어주면 됩니다.</p>
-      </div>
-      <div class="tip">
-        <h4>파일이 아니라 코드로만 나오면</h4>
-        <p>프롬프트에 <mark>game.html 파일로 첨부해 달라</mark>는 요청이 들어 있지만,
-           그래도 코드만 나올 때가 있습니다.<br>
-           그럴 땐 받은 코드 전체를 복사해 메모장에 붙여넣고
-           <mark>파일 이름을 game.html</mark>로 저장하세요. 더블클릭하면 바로 실행됩니다.</p>
-      </div>
     </div></div>
 
     <div class="card-bot" aria-hidden="true"
@@ -483,9 +459,9 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
         </div>
 
         <div class="tipcard">
-          <h4><i>04</i>결과 화면에 재미를 몰아주기</h4>
-          <p>사람들이 가장 오래 보는 건 결과 화면입니다. 여기가 화려하면 반응이 확 달라집니다.</p>
-          <div class="say"><q>끝나면 당첨자 이름을 크게 띄우고 색종이 날리는 효과를 넣어줘.</q></div>
+          <h4><i>04</i>그림을 첨부해서 바꾸기</h4>
+          <p>배경화면이나 캐릭터를 이미지로 먼저 만들어 대화창에 첨부해 보세요. 말로만 설명할 때보다 원하는 화면에 훨씬 가깝게 나옵니다.</p>
+          <div class="say"><q>첨부한 그림을 배경으로 쓰고, 이 캐릭터가 움직이게 해줘.</q></div>
         </div>
 
       </div>
@@ -548,7 +524,9 @@ pair('look', 'lookMore'),
 '2. 설명서를 읽지 않아도 시작 버튼만 누르면 바로 이해되게 만들어 줘.',
 '3. 한 판이 30초 안에 끝나서 회의 직전에도 가볍게 즐길 수 있게 해 줘.',
 '4. 규칙은 시작 화면에 세 줄 이내로 보여 줘.',
-'5. 결과 화면에 승자와 순위를 크게 띄우고 다시하기 버튼을 넣어 줘.',
+'5. 사람들이 가장 오래 보는 건 결과 화면이니까 여기에 재미를 몰아줘.',
+'   승자 이름과 순위를 크게 띄우고, 색종이가 날리는 것 같은 축하 효과와',
+'   다시하기 버튼을 넣어 줘.',
 '6. PC 마우스와 휴대폰 터치에서 모두 동작하게 만들어 줘.',
 '7. 화면 분위기에 맞춰 색과 글꼴을 정하고, 소리 대신 화면 움직임으로 반응을 표현해 줘.',
 '8. 사무실에서 함께 보기 때문에 과격하거나 민망한 표현은 넣지 말아 줘.',
