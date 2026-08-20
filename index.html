@@ -46,10 +46,29 @@ body{
    02~06 이미지는 바깥 여백이 투명이라 이 배경이 그대로 비쳐 하나의 게임 화면처럼 이어진다. */
 #bg{
   position:fixed; inset:0; z-index:0; pointer-events:none;
-  background:
-    linear-gradient(rgba(2,16,34,.22), rgba(2,16,34,.42)),
-    url('wallpaper.webp') center center / cover no-repeat,
-    var(--sea);
+  overflow:hidden; background:var(--sea);
+}
+/* 배경 스크롤 : wallpaper 를 4장 쌓되 짝수 장은 상하 반전.
+   한 장 걸러 뒤집으면 맞닿는 행이 서로 같아져 이음매가 완전히 사라지고,
+   2장(=50%)만큼 내려간 시점에서 같은 그림이 되므로 무한 반복이 된다.
+   단, 뒤집으면 수평선이 거꾸로 보이므로 위아래 구분이 없는
+   구름·바다 영역(원본 아래쪽 73%)만 잘라서 쓴다. */
+#bg .roll{
+  position:absolute; top:0; left:0; width:100%;
+  animation:fly 150s linear infinite;   /* will-change 는 생략 — 레이어가 커서 GPU 메모리만 먹는다 */
+}
+#bg .roll i{
+  display:block; width:100%; aspect-ratio:1536/2009;   /* 원본 1536x2752 의 아래 73% */
+  background:url('wallpaper.webp') center bottom / 100% 136.9% no-repeat;
+}
+#bg .roll i:nth-child(even){ transform:scaleY(-1); }
+#bg::after{        /* 본문 가독성용 스크림 */
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(rgba(2,16,34,.22), rgba(2,16,34,.42));
+}
+@keyframes fly{
+  from{ transform:translateY(-50%); }   /* 50% = 4장 중 2장 = 한 주기 */
+  to  { transform:translateY(0); }
 }
 #sky{ position:fixed; inset:0; width:100%; height:100%; z-index:1; display:block; }
 #scan{
@@ -242,13 +261,16 @@ input::placeholder{ color:#9DB2AA; }
   #hud{ display:none; }
   .say{ flex-direction:column; align-items:flex-start; }
 }
-@media (prefers-reduced-motion:reduce){ html{ scroll-behavior:auto; } }
+@media (prefers-reduced-motion:reduce){
+  html{ scroll-behavior:auto; }
+  #bg .roll{ animation:none; transform:translateY(-50%); }
+}
 </style>
 </head>
 
 <body>
 
-<div id="bg" aria-hidden="true"></div>
+<div id="bg" aria-hidden="true"><div class="roll"><i></i><i></i><i></i><i></i></div></div>
 <canvas id="sky" aria-hidden="true"></canvas>
 <div id="scan" aria-hidden="true"></div>
 <div id="hud" aria-hidden="true">
