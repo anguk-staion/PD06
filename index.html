@@ -226,6 +226,7 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
 .f-help p{ margin:0 0 5px; font-size:13.5px; line-height:1.6; color:var(--text-sub); }
 .f-help p:last-child{ margin-bottom:0; }
 .f-help b{ color:#0F6B3D; font-weight:800; }
+.f-help .opt{ font-size:12px; font-weight:500; color:var(--text-sub); margin-left:5px; }
 
 .pills{ display:flex; flex-wrap:wrap; gap:8px; }
 .pills + textarea{ margin-top:10px; }   /* 알약 버튼 아래 서술형 칸 */
@@ -373,19 +374,18 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
           <button type="button" class="pill" aria-pressed="false">타이밍 맞추기</button>
           <button type="button" class="pill" aria-pressed="false">기억력 게임</button>
           <button type="button" class="pill" aria-pressed="false">O · X 퀴즈</button>
-          <button type="button" class="pill" aria-pressed="false">마구 누르기</button>
           <button type="button" class="pill" aria-pressed="false">피하기 · 슈팅</button>
           <button type="button" class="pill" aria-pressed="false">슬롯머신</button>
-          <button type="button" class="pill" aria-pressed="false">타자 대결</button>
         </div>
         <textarea id="fType" data-key="typeMore" data-clears="type" rows="3"
           placeholder="예) 원하는 유형이 없다면 여기에 직접 적어주세요."></textarea>
       </div>
 
       <div class="field">
-        <label class="f-label" for="fMode">게임 방식 <span class="opt">선택 · 비워두어도 됩니다</span></label>
+        <label class="f-label" for="fMode">게임 방식</label>
         <div class="f-help">
-          <p><b>이런 것들을 담아주세요</b> — 언제 즐기는 게임인지 · 어떻게 진행되는지 · 승부를 어떻게 정하는지</p>
+          <p><b>이런 것들을 담아주세요</b> <span class="opt">비워두어도 됩니다</span><br>
+             언제 즐기는 게임인지 · 어떻게 진행되는지 · 승부를 어떻게 정하는지</p>
         </div>
         <textarea id="fMode" data-key="mode" rows="5"
           placeholder="예) 점심 먹고 커피 내기를 정할 때 하는 게임이야.&#10;순서대로 룰렛을 돌려서 나온 점수를 모으고, 점수가 가장 낮은 사람이 커피를 쏘는 방식이야."></textarea>
@@ -397,8 +397,8 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
           <button type="button" class="pill" aria-pressed="false">8비트 도트</button>
           <button type="button" class="pill" aria-pressed="false">레트로 오락실</button>
           <button type="button" class="pill" aria-pressed="false">네온 사이버</button>
-          <button type="button" class="pill" aria-pressed="false">깔끔한 미니멀</button>
-          <button type="button" class="pill" aria-pressed="false">손그림 낙서</button>
+          <button type="button" class="pill" aria-pressed="false">판타지 RPG</button>
+          <button type="button" class="pill" aria-pressed="false">파스텔 캐주얼</button>
           <button type="button" class="pill" aria-pressed="false">우주 SF</button>
         </div>
         <textarea id="fLook" data-key="lookMore" data-clears="look" rows="3"
