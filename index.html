@@ -369,8 +369,8 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
           <button type="button" class="pill" aria-pressed="false">피하기 · 슈팅</button>
           <button type="button" class="pill" aria-pressed="false">슬롯머신</button>
         </div>
-        <textarea id="fType" data-key="typeMore" data-clears="type" rows="3"
-          placeholder="예) 원하는 유형이 없다면 여기에 직접 적어주세요."></textarea>
+        <textarea id="fType" data-key="typeMore" rows="3"
+          placeholder="좋아하는 게임이나 영감을 받은 레퍼런스 게임이 있다면 자유롭게 적어주세요."></textarea>
       </div>
 
       <div class="field">
@@ -389,9 +389,10 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
           <button type="button" class="pill" aria-pressed="false">판타지 RPG</button>
           <button type="button" class="pill" aria-pressed="false">파스텔 캐주얼</button>
           <button type="button" class="pill" aria-pressed="false">우주 SF</button>
+          <button type="button" class="pill" aria-pressed="false">카툰 코믹</button>
+          <button type="button" class="pill" aria-pressed="false">보드게임 · 카드</button>
+          <button type="button" class="pill" aria-pressed="false">사무실 오피스</button>
         </div>
-        <textarea id="fLook" data-key="lookMore" data-clears="look" rows="3"
-          placeholder="예) 초록색을 메인으로 쓰고, 결과 화면에 부서 이름이 크게 나왔으면 좋겠어."></textarea>
       </div>
 
       <div class="prompt-wrap">
@@ -483,7 +484,7 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
 /* ══════════ 1. 프롬프트 생성기 ══════════ */
 (function(){
   var out = document.getElementById('promptOut');
-  var state = { type:'', typeMore:'', mode:'', look:'', lookMore:'' };
+  var state = { type:'', typeMore:'', mode:'', look:'' };
   /* 비워두면 이 예시가 대신 들어간다 — 입력칸 안내와 같은 내용 */
   var ph = {
     type: '뽑기 · 룰렛',
@@ -492,11 +493,10 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
     look: '8비트 도트'
   };
   function v(k){ return state[k] ? state[k] : (ph[k] || ''); }
-  /* 알약 버튼 값과 그 아래 서술형 칸을 합친다.
-     직접 적으면 버튼 선택이 풀리므로 보통은 둘 중 하나만 채워져 있다. */
+  /* 게임 유형 = 알약 버튼(장르) + 서술형(레퍼런스 게임). 서로 보완 관계라 둘 다 넣는다. */
   function pair(k, more){
-    if(state[k] && state[more]) return state[k] + '\n' + state[more];
-    if(state[more]) return state[more];
+    if(state[k] && state[more]) return state[k] + '\n' + '참고할 만한 게임 : ' + state[more];
+    if(state[more]) return '참고할 만한 게임 : ' + state[more];
     return v(k);                       /* 둘 다 비면 기본 예시 */
   }
 
@@ -512,7 +512,7 @@ pair('type', 'typeMore'),
 v('mode'),
 '',
 '[게임 디자인]',
-pair('look', 'lookMore'),
+v('look'),
 '',
 '[꼭 지켜야 할 것]',
 '1. HTML, CSS, JavaScript를 한 파일에 담고 외부 라이브러리 없이 혼자 실행되게 만들어 줘.',
@@ -534,19 +534,8 @@ pair('look', 'lookMore'),
   }
   function render(){ out.value = build(); }
 
-  function clearPills(key){
-    var group = document.querySelector('.pills[data-key="' + key + '"]');
-    if(!group) return;
-    group.querySelectorAll('.pill').forEach(function(b){ b.setAttribute('aria-pressed','false'); });
-    state[key] = '';
-  }
   document.querySelectorAll('input[data-key], textarea[data-key]').forEach(function(el){
-    el.addEventListener('input', function(){
-      state[el.dataset.key] = el.value.trim();
-      /* 직접 적기 시작하면 위쪽 알약 버튼 선택은 해제한다 */
-      if(el.dataset.clears && state[el.dataset.key]) clearPills(el.dataset.clears);
-      render();
-    });
+    el.addEventListener('input', function(){ state[el.dataset.key] = el.value.trim(); render(); });
   });
   /* 알약 버튼 — 같은 그룹 안에서 하나만 선택, 다시 누르면 해제 */
   document.querySelectorAll('.pills[data-key]').forEach(function(group){
