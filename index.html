@@ -81,17 +81,32 @@ body{
      우측 하단 = 파워 · 폭탄 · 잔기 · CREDIT / INSERT COIN  */
 #hudTop, #hudBot{
   display:none;               /* 자리가 있을 때만 표시 (아래 미디어쿼리) */
-  position:fixed; right:16px; z-index:4; pointer-events:none;
-  width:140px; padding:11px 12px 10px;
+  position:fixed; z-index:4; pointer-events:none;
+  font-family:ui-monospace,'Consolas','Menlo',monospace;
+  font-size:12px; font-weight:700; letter-spacing:1px; line-height:1.5;
+  color:#EAF6FD; text-shadow:0 1px 3px rgba(2,14,28,.95), 0 0 6px rgba(2,14,28,.85);
+}
+/* 우측 상단 : 프로필 + 점수 (여백 안에만 놓이는 작은 패널) */
+#hudTop{
+  top:16px; right:16px; width:140px; padding:11px 12px 10px;
   background:rgba(3,20,38,.62);
   border:1px solid rgba(126,196,236,.38);
   box-shadow:0 6px 22px rgba(2,14,28,.45);
-  font-family:ui-monospace,'Consolas','Menlo',monospace;
-  font-size:12px; font-weight:700; letter-spacing:1px; line-height:1.5;
-  color:#EAF6FD; text-shadow:0 1px 3px rgba(2,14,28,.95);
 }
-#hudTop{ top:16px; }
-#hudBot{ bottom:16px; }
+/* 하단 : 박스 없이 텍스트만. 본문 위로 올라타지 않도록 좌우 여백에 나눠 배치한다 */
+#hudBot{
+  left:0; right:0; bottom:14px; padding:0 22px;
+  align-items:flex-end; justify-content:space-between; pointer-events:none;
+  /* 박스가 없으니 밝은 구름 위에서도 읽히도록 1px 외곽선을 글자에 두른다 */
+  text-shadow:
+     1px  1px 0 rgba(2,14,28,.92), -1px  1px 0 rgba(2,14,28,.92),
+     1px -1px 0 rgba(2,14,28,.92), -1px -1px 0 rgba(2,14,28,.92),
+     0 0 10px rgba(2,14,28,.7);
+}
+#hudBot .side{ display:flex; flex-direction:column; gap:3px; }
+#hudBot .side.r{ align-items:flex-end; }
+#hudBot .cell{ display:flex; align-items:baseline; gap:8px; white-space:nowrap; }
+#hudBot .side.r .cell{ justify-content:flex-end; }
 
 #hudTop .k, #hudBot .k{ color:#9CCDE9; font-weight:500; font-size:10px; letter-spacing:2px; }
 #hudTop .v, #hudBot .v{ color:#FFF3C4; font-size:14px; }
@@ -111,23 +126,19 @@ body{
 }
 
 #hudBot .gauge{
-  margin:4px 0 10px; height:9px; width:100%;
-  background:rgba(3,24,40,.85); border:1px solid #2E6A90; box-shadow:0 0 8px rgba(10,58,92,.8);
+  width:66px; height:8px; align-self:center;
+  background:rgba(3,20,38,.8); border:1px solid rgba(180,225,250,.75);
+  box-shadow:0 0 6px rgba(2,14,28,.8);
 }
 #hudBot .gauge i{
   display:block; height:100%; width:20%;
   background:linear-gradient(to right,#18D76B,#B9F24D,#FFE066);
   transition:width .18s;
 }
-#hudBot .lives{ color:#18D76B; font-size:13px; letter-spacing:3px; text-shadow:0 0 8px rgba(24,215,107,.7); }
-#hudBot .lives.none{ color:#5C7A8C; text-shadow:none; }
-#hudBot .foot{
-  margin-top:10px; padding-top:9px;
-  border-top:1px solid rgba(126,196,236,.28);
-}
+#hudBot .lives{ color:#18D76B; font-size:13px; letter-spacing:3px; text-shadow:0 0 8px rgba(24,215,107,.8); }
+#hudBot .lives.none{ color:#8FB0C4; text-shadow:0 1px 3px rgba(2,14,28,.95); }
 #hudBot .coin{
-  margin-top:6px; text-align:center;
-  font-size:10px; letter-spacing:1.5px; color:#FFE066;
+  font-size:11px; letter-spacing:1.5px; color:#FFE066;
   animation:blink 1.1s steps(1) infinite;
 }
 #hudBot .coin.over{ color:#FF6B4A; }
@@ -135,7 +146,8 @@ body{
 
 /* 본문(최대 1000px) 좌우에 여백이 남을 때만 노출 */
 @media (min-width:1320px){
-  #hudTop, #hudBot{ display:block; }
+  #hudTop{ display:block; }
+  #hudBot{ display:flex; }
 }
 @media (prefers-reduced-motion:reduce){
   #hudBot .coin{ animation:none; }
@@ -246,6 +258,10 @@ input::placeholder{ color:#9DB2AA; }
 .tip h4{ font-size:14px; font-weight:800; letter-spacing:2px; color:#8A7411; margin:0 0 8px; }
 .tip p{ margin:0; font-size:15.5px; line-height:1.7; color:var(--text); }
 .tip mark{ background:#F7E9A0; color:var(--text); padding:1px 4px; }
+.tip img{
+  display:block; width:100%; max-width:300px; height:auto;
+  margin:13px 0 0; border:2px solid var(--line);
+}
 
 .tips{ display:grid; gap:16px; }
 .tipcard{ background:#fff; border:2px solid var(--line); padding:20px 22px; }
@@ -256,17 +272,9 @@ input::placeholder{ color:#9DB2AA; }
 .tipcard h4 i{ font-style:normal; font-size:14px; color:var(--neon); letter-spacing:1px; }
 .tipcard p{ margin:0 0 13px; font-size:15px; line-height:1.7; color:var(--text-sub); }
 .say{
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
   background:#EFF6F3; border-left:4px solid var(--neon); padding:11px 12px;
 }
 .say q{ font-size:14.5px; line-height:1.55; color:var(--text); quotes:'"' '"'; }
-.say button{
-  flex:0 0 auto; font-family:var(--font); font-size:12px; font-weight:800;
-  color:#0B2419; background:var(--btn); border:2px solid var(--neon);
-  padding:8px 11px; cursor:pointer;
-}
-.say button:hover{ background:var(--neon); }
-.say button.done{ background:var(--gold); border-color:var(--gold); }
 
 /* ── 토스트 ───────────────────────────────────── */
 #toast{
@@ -305,13 +313,15 @@ input::placeholder{ color:#9DB2AA; }
   <div class="row"><span class="k">STAGE</span><span class="v st" id="stage">1-1</span></div>
 </div>
 <div id="hudBot" aria-hidden="true">
-  <div class="row"><span class="k">POWER</span><span class="v" id="plv">Lv1</span></div>
-  <div class="gauge"><i id="pbar"></i></div>
-  <div class="row"><span class="k">BOMB</span><span class="v" id="bomb">2</span></div>
-  <div class="row"><span class="k">LIVES</span><span class="lives" id="lives">▲▲▲▲▲</span></div>
-  <div class="foot">
-    <div class="row"><span class="k">CREDIT</span><span class="v" id="credit">00</span></div>
-    <div class="coin" id="coin">INSERT COIN</div>
+  <div class="side">
+    <div class="cell"><span class="k">POWER</span><span class="v" id="plv">Lv1</span></div>
+    <div class="cell"><span class="gauge"><i id="pbar"></i></span></div>
+    <div class="cell"><span class="k">BOMB</span><span class="v" id="bomb">2</span></div>
+  </div>
+  <div class="side r">
+    <div class="cell"><span class="k">LIVES</span><span class="lives" id="lives">▲▲▲▲▲</span></div>
+    <div class="cell"><span class="k">CREDIT</span><span class="v" id="credit">00</span></div>
+    <div class="cell"><span class="coin" id="coin">INSERT COIN</span></div>
   </div>
 </div>
 
@@ -327,11 +337,12 @@ input::placeholder{ color:#9DB2AA; }
   <section class="shot">
     <img src="이미지/PD06-02.png"
          alt="Main Quest - 당신은 AI를 활용하는 게임 아키텍트입니다. 동료를 구원해 줄 게임을 직접 설계해 주세요." />
+    <!-- 좌표는 PD06-02.png 에서 민트 버튼 영역을 직접 측정한 값 -->
     <a class="hot" href="https://hmap.hdec.co.kr/HMAP/WorkSpace/Main/AiPicture.aspx"
        target="_blank" rel="noopener" aria-label="A. 우선, 나부터 활력이 필요해"
-       style="left:26.54%; top:63.03%; width:46.92%; height:6.60%;"></a>
-    <a class="hot" href="#step1" aria-label="B. 그래, 게임 제작 시작해보자!"
-       style="left:26.54%; top:72.26%; width:46.92%; height:6.60%;"></a>
+       style="left:26.73%; top:67.85%; width:46.51%; height:9.12%;"></a>
+    <a class="hot" href="#step1" aria-label="B. 그래, 게임 제작을 시작해보자!"
+       style="left:26.73%; top:81.46%; width:46.51%; height:9.05%;"></a>
   </section>
 
   <!-- ══ 03. STEP 1 게임 기획하기 ═════════════════ -->
@@ -423,14 +434,25 @@ input::placeholder{ color:#9DB2AA; }
 
     <div class="card-mid"><div class="card-in">
       <div class="tip" style="margin-top:0;">
-        <h4>TIP</h4>
-        <p>기본으로 켜져 있는 '자동' 모드 대신 <mark>GPT 깊이 생각하기</mark>로 바꿔보세요.<br>
+        <h4>TIP · 모델 바꾸기</h4>
+        <p>입력창 위 모델 선택에서 기본값인 '자동' 대신
+           <mark>GPT → GPT 5.6 Think deeper</mark>를 골라보세요.<br>
            게임 규칙과 코드를 훨씬 꼼꼼하게 짜줍니다.</p>
+        <img src="이미지/gpt.jpg" loading="lazy"
+             alt="Copilot 모델 선택 메뉴에서 GPT 5.6 Think deeper를 고른 화면" />
       </div>
       <div class="tip">
-        <h4>답이 코드로 나오면</h4>
-        <p>받은 코드 전체를 복사해 메모장에 붙여넣고 <mark>파일 이름을 game.html</mark>로 저장하세요.<br>
-           저장한 파일을 더블클릭하면 바로 게임이 실행됩니다.</p>
+        <h4>TIP · 그림도 같이 주기</h4>
+        <p>배경화면이나 캐릭터를 <mark>이미지로 먼저 만들어</mark> 대화창에 첨부해 보세요.
+           말로만 설명할 때보다 원하는 화면에 훨씬 가깝게 나옵니다.<br>
+           "첨부한 그림을 배경으로 쓰고, 이 캐릭터가 움직이게 해 줘"처럼 함께 적어주면 됩니다.</p>
+      </div>
+      <div class="tip">
+        <h4>파일이 아니라 코드로만 나오면</h4>
+        <p>프롬프트에 <mark>game.html 파일로 첨부해 달라</mark>는 요청이 들어 있지만,
+           그래도 코드만 나올 때가 있습니다.<br>
+           그럴 땐 받은 코드 전체를 복사해 메모장에 붙여넣고
+           <mark>파일 이름을 game.html</mark>로 저장하세요. 더블클릭하면 바로 실행됩니다.</p>
       </div>
     </div></div>
 
@@ -449,37 +471,25 @@ input::placeholder{ color:#9DB2AA; }
         <div class="tipcard">
           <h4><i>01</i>한 번에 하나씩 고치기</h4>
           <p>여러 가지를 한꺼번에 요청하면 잘 되던 부분까지 망가집니다. 고칠 곳을 하나만 콕 집어 말해주세요.</p>
-          <div class="say"><q>다른 건 그대로 두고, 시작 버튼 색만 노란색으로 바꿔줘.</q><button type="button" class="say-copy">복사</button></div>
+          <div class="say"><q>다른 건 그대로 두고, 시작 버튼 색만 노란색으로 바꿔줘.</q></div>
         </div>
 
         <div class="tipcard">
           <h4><i>02</i>안 되면 '어떻게' 안 되는지 말하기</h4>
           <p>"안 돼요"만으로는 고칠 수 없습니다. 무엇을 눌렀을 때 화면이 어떻게 됐는지 그대로 알려주세요.</p>
-          <div class="say"><q>시작 버튼을 눌렀는데 화면이 하얗게만 남고 아무것도 안 나와.</q><button type="button" class="say-copy">복사</button></div>
+          <div class="say"><q>시작 버튼을 눌렀는데 화면이 하얗게만 남고 아무것도 안 나와.</q></div>
         </div>
 
         <div class="tipcard">
           <h4><i>03</i>난이도 맞추기</h4>
           <p>처음 나온 게임은 대부분 너무 쉽거나 너무 어렵습니다. 직접 해보고 체감으로 조절하세요.</p>
-          <div class="say"><q>너무 빨리 끝나. 한 판이 20초쯤 걸리게 속도를 늦춰줘.</q><button type="button" class="say-copy">복사</button></div>
+          <div class="say"><q>너무 빨리 끝나. 한 판이 20초쯤 걸리게 속도를 늦춰줘.</q></div>
         </div>
 
         <div class="tipcard">
-          <h4><i>04</i>휴대폰에서도 되는지 확인하기</h4>
-          <p>동료들은 대부분 휴대폰으로 열어봅니다. 터치가 되는지, 글씨가 잘리지 않는지 꼭 확인하세요.</p>
-          <div class="say"><q>휴대폰 세로 화면에서도 버튼이 안 잘리게 크기를 맞춰줘.</q><button type="button" class="say-copy">복사</button></div>
-        </div>
-
-        <div class="tipcard">
-          <h4><i>05</i>결과 화면에 재미를 몰아주기</h4>
+          <h4><i>04</i>결과 화면에 재미를 몰아주기</h4>
           <p>사람들이 가장 오래 보는 건 결과 화면입니다. 여기가 화려하면 반응이 확 달라집니다.</p>
-          <div class="say"><q>끝나면 당첨자 이름을 크게 띄우고 색종이 날리는 효과를 넣어줘.</q><button type="button" class="say-copy">복사</button></div>
-        </div>
-
-        <div class="tipcard">
-          <h4><i>06</i>마지막엔 전체 코드 다시 받기</h4>
-          <p>여러 번 고치면 바뀐 부분만 알려주는 경우가 많습니다. 마무리는 항상 전체 코드로 받아두세요.</p>
-          <div class="say"><q>지금까지 고친 내용을 모두 합쳐서 HTML 코드 전체를 다시 줘.</q><button type="button" class="say-copy">복사</button></div>
+          <div class="say"><q>끝나면 당첨자 이름을 크게 띄우고 색종이 날리는 효과를 넣어줘.</q></div>
         </div>
 
       </div>
@@ -533,8 +543,11 @@ input::placeholder{ color:#9DB2AA; }
 '6. PC 마우스와 휴대폰 터치에서 모두 동작하게 만들어 줘.',
 '7. 화면 분위기에 맞춰 색과 글꼴을 정하고, 소리 대신 화면 움직임으로 반응을 표현해 줘.',
 '8. 사무실에서 함께 보기 때문에 과격하거나 민망한 표현은 넣지 말아 줘.',
+'9. 앞으로 내가 무엇을 고쳐달라고 하든, 바뀐 부분만 알려주지 말고',
+'   매번 완성된 HTML 코드 전체를 처음부터 끝까지 다시 줘.',
 '',
-'완성된 HTML 코드 전체를 코드블록 하나로 출력해 줘.'
+'완성된 HTML 코드 전체를 코드블록 하나로 출력해 줘.',
+'그리고 같은 내용을 game.html 파일로 만들어서, 내가 바로 내려받을 수 있게 첨부해 줘.'
     ].join('\n');
   }
   function render(){ out.value = build(); }
@@ -577,14 +590,6 @@ input::placeholder{ color:#9DB2AA; }
       setTimeout(function(){ cp.textContent = '프롬프트 복사하기'; cp.classList.remove('done'); }, 1800);
     }).catch(function(){
       out.removeAttribute('readonly'); out.select(); say('Ctrl+C를 눌러 복사해주세요');
-    });
-  });
-  document.querySelectorAll('.say-copy').forEach(function(b){
-    b.addEventListener('click', function(){
-      copyText(b.parentElement.querySelector('q').textContent).then(function(){
-        b.textContent = '완료'; b.classList.add('done'); say('문장을 복사했습니다');
-        setTimeout(function(){ b.textContent = '복사'; b.classList.remove('done'); }, 1500);
-      });
     });
   });
 })();
@@ -720,9 +725,17 @@ input::placeholder{ color:#9DB2AA; }
     ctx.fillText(it.kind, it.x, it.y+1);
     ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
   }
+  /* 본문 컬럼 뒤는 어차피 가려서 안 보이므로, 적기는 좌우 여백에만 띄운다.
+     여백이 좁은 화면(≈1180px 미만)에서는 자리가 없으니 화면 전체를 쓴다. */
+  function spawnX(){
+    var edge = (W - Math.min(1000, W))/2, m = 26, span = edge - m*2;
+    if(span < 60) return 40 + Math.random()*(W-80);
+    return Math.random() < 0.5 ? m + Math.random()*span
+                               : W - m - Math.random()*span;
+  }
   function spawnEnemy(){
     var big = Math.random() < 0.16;
-    enemies.push({ x:40+Math.random()*(W-80), y:-40, s:big?4.5:3,
+    enemies.push({ x:spawnX(), y:-40, s:big?4.5:3,
                    vy:(big?.9:1.5)+Math.random()*.9, amp:Math.random()*1.6,
                    ph:Math.random()*6.28, hp:big?4:1, big:big,
                    fc:60+Math.random()*70 });
@@ -926,15 +939,7 @@ input::placeholder{ color:#9DB2AA; }
 
   window.addEventListener('pointermove', function(e){
     idle = 0;
-    var x = Math.max(24, Math.min(W-24, e.clientX));
-    /* 본문 컬럼 뒤로는 들어가지 않는다 — 어차피 가려서 안 보이고,
-       가운데는 적기가 가장 빽빽한 구간이라 세워두면 계속 격추당한다 */
-    var edge = (W - Math.min(1000, W))/2 - 26;
-    if(edge > 44){
-      var l = edge, r = W - edge;
-      if(x > l && x < r) x = (e.clientX < W/2) ? l : r;
-    }
-    player.tx = x;
+    player.tx = Math.max(24, Math.min(W-24, e.clientX));
     player.ty = Math.max(H*0.18, Math.min(H-40, e.clientY));
   }, { passive:true });
 
