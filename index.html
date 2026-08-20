@@ -76,40 +76,40 @@ body{
   opacity:.45;
 }
 /* ── 아케이드 HUD ───────────────────────────────
-   실제 슈팅게임 화면 구성 :
-     상단 = 점수류(1P / STAGE / HI)를 화면 전체 폭에 고르게 배치
-     하단 = 파워 게이지 · 폭탄 · 파일럿 프로필  */
+   본문 오른쪽 여백을 아케이드 사이드 패널처럼 쓴다 :
+     우측 상단 = 파일럿 프로필 + 점수(1P / HI / STAGE)
+     우측 하단 = 파워 · 폭탄 · 잔기 · CREDIT / INSERT COIN  */
 #hudTop, #hudBot{
   display:none;               /* 자리가 있을 때만 표시 (아래 미디어쿼리) */
-  position:fixed; z-index:4; pointer-events:none;
-  font-family:ui-monospace,'Consolas','Menlo',monospace;
-  font-weight:700; letter-spacing:1px; line-height:1.5;
-  color:#EAF6FD; text-shadow:0 1px 3px rgba(2,14,28,.95), 0 0 10px rgba(2,14,28,.7);
-}
-#hudTop .k, #hudBot .k{ color:#9CCDE9; font-weight:500; font-size:10px; letter-spacing:2px; }
-#hudTop .v, #hudBot .v{ color:#FFF3C4; }
-
-/* 상단 바 — 아래로 자연스럽게 사라지는 그라데이션이라 본문을 가리지 않는다 */
-#hudTop{
-  top:0; left:0; right:0; height:64px; padding:11px 40px 0;
-  background:linear-gradient(to bottom, rgba(3,20,38,.80), rgba(3,20,38,.34) 55%, rgba(3,20,38,0));
-}
-#hudTop .bar{ display:flex; justify-content:space-around; align-items:baseline; gap:20px; }
-#hudTop .cell{ display:flex; align-items:baseline; gap:9px; }
-#hudTop .v{ font-size:17px; letter-spacing:2px; }
-#hudTop .v.st{ color:#FF9E45; }   /* .stage 는 본문 컬럼이 쓰는 클래스라 이름을 피함 */
-#hudTop .v.hi{ color:#8FE8B4; }
-
-/* 하단 좌측 패널 */
-#hudBot{
-  left:16px; bottom:16px; width:132px; padding:11px 12px 10px;
+  position:fixed; right:16px; z-index:4; pointer-events:none;
+  width:140px; padding:11px 12px 10px;
   background:rgba(3,20,38,.62);
   border:1px solid rgba(126,196,236,.38);
   box-shadow:0 6px 22px rgba(2,14,28,.45);
-  font-size:12px;
+  font-family:ui-monospace,'Consolas','Menlo',monospace;
+  font-size:12px; font-weight:700; letter-spacing:1px; line-height:1.5;
+  color:#EAF6FD; text-shadow:0 1px 3px rgba(2,14,28,.95);
 }
-#hudBot .row{ display:flex; justify-content:space-between; align-items:baseline; }
-#hudBot .v{ font-size:14px; }
+#hudTop{ top:16px; }
+#hudBot{ bottom:16px; }
+
+#hudTop .k, #hudBot .k{ color:#9CCDE9; font-weight:500; font-size:10px; letter-spacing:2px; }
+#hudTop .v, #hudBot .v{ color:#FFF3C4; font-size:14px; }
+#hudTop .row, #hudBot .row{ display:flex; justify-content:space-between; align-items:baseline; }
+#hudTop .v.st{ color:#FF9E45; }   /* .stage 는 본문 컬럼이 쓰는 클래스라 이름을 피함 */
+#hudTop .v.hi{ color:#8FE8B4; }
+
+/* 파일럿 프로필 — 점수와 겹치지 않게 패널 맨 위에 두고 아래에 구분선 */
+#hudTop .pilot{
+  display:block; width:100%; height:auto; margin:0 0 10px;
+  image-rendering:pixelated;   /* 픽셀아트 초상화 — 뭉개지지 않게 */
+}
+#hudTop .name{
+  margin:-4px 0 9px; padding-bottom:8px;
+  border-bottom:1px solid rgba(126,196,236,.28);
+  font-size:9px; font-weight:500; letter-spacing:2px; color:#9CCDE9; text-align:center;
+}
+
 #hudBot .gauge{
   margin:4px 0 10px; height:9px; width:100%;
   background:rgba(3,24,40,.85); border:1px solid #2E6A90; box-shadow:0 0 8px rgba(10,58,92,.8);
@@ -119,17 +119,26 @@ body{
   background:linear-gradient(to right,#18D76B,#B9F24D,#FFE066);
   transition:width .18s;
 }
-#hudBot .pilot{
-  display:block; width:100%; height:auto; margin:10px 0 0;
-  image-rendering:pixelated;   /* 픽셀아트 초상화 — 뭉개지지 않게 */
+#hudBot .lives{ color:#18D76B; font-size:13px; letter-spacing:3px; text-shadow:0 0 8px rgba(24,215,107,.7); }
+#hudBot .lives.none{ color:#5C7A8C; text-shadow:none; }
+#hudBot .foot{
+  margin-top:10px; padding-top:9px;
+  border-top:1px solid rgba(126,196,236,.28);
 }
-#hudBot .sub{
-  margin-top:8px; font-size:9px; font-weight:500;
-  color:#6FA6C6; opacity:.75; letter-spacing:2px; text-align:center;
+#hudBot .coin{
+  margin-top:6px; text-align:center;
+  font-size:10px; letter-spacing:1.5px; color:#FFE066;
+  animation:blink 1.1s steps(1) infinite;
 }
+#hudBot .coin.over{ color:#FF6B4A; }
+@keyframes blink{ 0%,54%{ opacity:1; } 55%,100%{ opacity:0; } }
+
 /* 본문(최대 1000px) 좌우에 여백이 남을 때만 노출 */
 @media (min-width:1320px){
   #hudTop, #hudBot{ display:block; }
+}
+@media (prefers-reduced-motion:reduce){
+  #hudBot .coin{ animation:none; }
 }
 
 /* ── 스테이지 ─────────────────────────────────── */
@@ -289,18 +298,21 @@ input::placeholder{ color:#9DB2AA; }
 <canvas id="sky" aria-hidden="true"></canvas>
 <div id="scan" aria-hidden="true"></div>
 <div id="hudTop" aria-hidden="true">
-  <div class="bar">
-    <div class="cell"><span class="k">1P</span><span class="v" id="score">000000</span></div>
-    <div class="cell"><span class="k">STAGE</span><span class="v st" id="stage">1-1</span></div>
-    <div class="cell"><span class="k">HI</span><span class="v hi" id="hi">030000</span></div>
-  </div>
+  <img class="pilot" src="player.webp" alt="" />
+  <div class="name">1P&nbsp;&nbsp;PILOT</div>
+  <div class="row"><span class="k">1P</span><span class="v" id="score">000000</span></div>
+  <div class="row"><span class="k">HI</span><span class="v hi" id="hi">010000</span></div>
+  <div class="row"><span class="k">STAGE</span><span class="v st" id="stage">1-1</span></div>
 </div>
 <div id="hudBot" aria-hidden="true">
   <div class="row"><span class="k">POWER</span><span class="v" id="plv">Lv1</span></div>
   <div class="gauge"><i id="pbar"></i></div>
   <div class="row"><span class="k">BOMB</span><span class="v" id="bomb">2</span></div>
-  <img class="pilot" src="player.webp" alt="" />
-  <div class="sub">MOVE : MOUSE</div>
+  <div class="row"><span class="k">LIVES</span><span class="lives" id="lives">▲▲▲▲▲</span></div>
+  <div class="foot">
+    <div class="row"><span class="k">CREDIT</span><span class="v" id="credit">00</span></div>
+    <div class="coin" id="coin">INSERT COIN</div>
+  </div>
 </div>
 
 <main class="stage">
@@ -588,11 +600,17 @@ input::placeholder{ color:#9DB2AA; }
       hiEl    = document.getElementById('hi'),
       plvEl   = document.getElementById('plv'),
       pbarEl  = document.getElementById('pbar'),
-      bombEl  = document.getElementById('bomb');
+      bombEl  = document.getElementById('bomb'),
+      livesEl = document.getElementById('lives'),
+      creditEl= document.getElementById('credit'),
+      coinEl  = document.getElementById('coin');
   var W=0, H=0, DPR=1, running=true, raf=null, t=0, score=0;
-  var hi = 30000;
+  var hi = 10000;
   try{ hi = Math.max(hi, parseInt(localStorage.getItem('pd06hi'), 10) || 0); }catch(e){}
   var MAXLV=5, pw=1, bombs=2, flash=0;
+  var LIVES0=5, MAXLIVES=5, lives=LIVES0, invuln=0, over=0, credit=0;
+  var nextUp=10000;                    /* 1UP 기준 점수 */
+  var idle=0, home={x:0,y:0,amp:0};    /* 마우스가 멈춰 있을 때의 자동 선회 */
   var MONO = "ui-monospace,'Consolas','Menlo',monospace";
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var player = { x:0, y:0, tx:0, ty:0, cool:0 };
@@ -605,11 +623,11 @@ input::placeholder{ color:#9DB2AA; }
     cvs.style.width = W+'px'; cvs.style.height = H+'px';
     ctx.setTransform(DPR,0,0,DPR,0,0);
     ctx.imageSmoothingEnabled = false;
-    /* 본문(최대 1000px)이 화면 가운데를 덮으므로, 시작 위치는 왼쪽 여백에 둔다 */
-    if(!player.x){
-      player.x = player.tx = Math.max(40, Math.min(W*0.5, (W-1000)/2 * 0.55));
-      player.y = player.ty = H*0.72;
-    }
+    /* 본문(최대 1000px)이 화면 가운데를 덮으므로, 시작·선회 위치는 왼쪽 여백에 둔다 */
+    home.x = Math.max(40, Math.min(W*0.5, (W-1000)/2 * 0.55));
+    home.y = H*0.66;
+    home.amp = Math.max(0, Math.min(110, (W-1000)/2 - 60));
+    if(!player.x){ player.x = player.tx = home.x; player.y = player.ty = home.y; }
   }
   window.addEventListener('resize', resize); resize();
 
@@ -736,6 +754,29 @@ input::placeholder{ color:#9DB2AA; }
     var n = Math.floor(score/2500);
     return (1 + Math.floor(n/4)) + '-' + (1 + (n%4));
   }
+
+  /* 잔기 — 폭탄이 남아 있으면 폭탄이 대신 터지고, 없을 때만 1기 잃는다 */
+  function loseLife(){
+    boom(player.x, player.y, 34, '#FFB347');
+    boom(player.x, player.y, 18, '#FF6B4A');
+    lives--; invuln = 165; flash = 12;
+    if(pw > 1) pw--;                       /* 아케이드식 : 피격 시 파워 1단계 하락 */
+    if(lives <= 0){
+      lives = 0; over = 330;               /* 약 5.5초 뒤 자동 재시작 */
+      credit++;
+    }
+  }
+  function resetGame(){
+    score = 0; pw = 1; bombs = 2; lives = LIVES0; nextUp = 10000;
+    invuln = 120; over = 0;
+    bullets.length = 0; ebullets.length = 0; enemies.length = 0;
+    items.length = 0; parts.length = 0;
+  }
+  /* 플레이어가 맞았는지 — 폭탄이 있으면 폭탄 발동으로 대체 */
+  function hitPlayer(){
+    if(bombs > 0){ useBomb(); return true; }
+    loseLife(); return false;
+  }
   function boom(x,y,n,col){
     for(var i=0;i<n;i++) parts.push({ x:x, y:y, vx:(Math.random()-.5)*4.5, vy:(Math.random()-.5)*4.5,
                                       life:18+Math.random()*16, s:2+Math.random()*3, c:col });
@@ -754,11 +795,21 @@ input::placeholder{ color:#9DB2AA; }
       px(wv.x*W, wv.y*H, wv.w, 2, wv.br ? 'rgba(235,250,255,.20)' : 'rgba(200,232,252,.10)');
     }
 
+    if(over > 0 && --over === 0) resetGame();
+    if(invuln > 0) invuln--;
+    var alive = over === 0;                 /* GAME OVER 동안엔 자기 기체가 사라진다 */
+
+    /* 마우스가 3초 넘게 멈춰 있으면 스스로 선회 — 가만히 선 표적이 되지 않게 */
+    if(++idle > 180){
+      player.tx = home.x + Math.sin(t/95)*home.amp;
+      player.ty = home.y + Math.sin(t/143)*30;
+    }
     player.x += (player.tx-player.x)*0.16;
     player.y += (player.ty-player.y)*0.16;
-    drawPlayer(player.x, player.y, 3.2);
+    /* 무적 시간엔 깜빡이며 부활 */
+    if(alive && (invuln === 0 || (t % 8) < 4)) drawPlayer(player.x, player.y, 3.2);
 
-    if(--player.cool <= 0){
+    if(alive && --player.cool <= 0){
       shoot();
       player.cool = Math.max(5, 10-pw);
     }
@@ -769,7 +820,7 @@ input::placeholder{ color:#9DB2AA; }
       px(bl.x-1.5, bl.y+3, 3, 8, '#18D76B');
     }
 
-    if(t % 34 === 0 && enemies.length < 13) spawnEnemy();
+    if(alive && t % 48 === 0 && enemies.length < 10) spawnEnemy();
     for(var e0=enemies.length-1;e0>=0;e0--){
       var en = enemies[e0];
       en.y += en.vy; en.x += Math.sin((t+en.ph*30)/34)*en.amp;
@@ -800,8 +851,11 @@ input::placeholder{ color:#9DB2AA; }
           break;
         }
       }
-      /* 적기가 너무 가까우면 폭탄 자동 발동 (배열이 비워지므로 즉시 루프 종료) */
-      if(bombs > 0 && Math.abs(en.x-player.x) < 34 && Math.abs(en.y-player.y) < 34){ useBomb(); break; }
+      /* 적기와 충돌 — 폭탄이 있으면 폭탄으로 막고, 없으면 1기 잃는다.
+         어느 쪽이든 enemies 가 통째로 비워지거나 상태가 바뀌므로 즉시 루프 종료 */
+      /* 판정점은 기체 그림보다 훨씬 작게 — 슈팅게임의 통상적인 방식 */
+      if(alive && invuln === 0 &&
+         Math.abs(en.x-player.x) < 15 && Math.abs(en.y-player.y) < 15){ hitPlayer(); break; }
     }
 
     /* 적 탄 */
@@ -810,6 +864,11 @@ input::placeholder{ color:#9DB2AA; }
       if(eb.y > H+20 || eb.x < -20 || eb.x > W+20){ ebullets.splice(eb0,1); continue; }
       px(eb.x-2.5, eb.y-2.5, 6, 6, '#FF7A2F');
       px(eb.x-1,   eb.y-1,   3, 3, '#FFE066');
+      if(alive && invuln === 0 &&
+         Math.abs(eb.x-player.x) < 9 && Math.abs(eb.y-player.y) < 9){
+        ebullets.splice(eb0,1);
+        if(hitPlayer()) break;   /* 폭탄이 터지면 ebullets 가 비워지므로 루프 종료 */
+      }
     }
 
     /* 아이템 */
@@ -818,7 +877,7 @@ input::placeholder{ color:#9DB2AA; }
       it.y += it.vy; it.x += Math.sin((t+q*23)/38)*.7;
       if(it.y > H+30){ items.splice(q,1); continue; }
       drawItem(it);
-      if(Math.abs(it.x-player.x) < 26 && Math.abs(it.y-player.y) < 26){
+      if(alive && Math.abs(it.x-player.x) < 26 && Math.abs(it.y-player.y) < 26){
         if(it.kind === 'P'){ if(pw < MAXLV) pw++; }
         else               { bombs = Math.min(bombs+1, 5); }
         score += 200; boom(it.x, it.y, 12, '#FFE066'); items.splice(q,1);
@@ -839,6 +898,12 @@ input::placeholder{ color:#9DB2AA; }
       ctx.fillRect(0,0,W,H);
     }
 
+    /* 1UP — 일정 점수마다 잔기 보충 */
+    if(alive && score >= nextUp){
+      nextUp += 10000;
+      if(lives < MAXLIVES){ lives++; boom(player.x, player.y, 16, '#8FE8B4'); }
+    }
+
     if(t % 6 === 0){
       if(score > hi){
         hi = score;
@@ -850,12 +915,26 @@ input::placeholder{ color:#9DB2AA; }
       plvEl.textContent   = 'Lv'+pw;
       pbarEl.style.width  = (pw/MAXLV*100)+'%';
       bombEl.textContent  = bombs;
+      livesEl.textContent = lives ? new Array(lives+1).join('▲') : '—';
+      livesEl.className   = lives ? 'lives' : 'lives none';
+      creditEl.textContent= ('0'+credit).slice(-2);
+      coinEl.textContent  = over ? 'GAME OVER' : 'INSERT COIN';
+      coinEl.className    = over ? 'coin over' : 'coin';
     }
     raf = requestAnimationFrame(step);
   }
 
   window.addEventListener('pointermove', function(e){
-    player.tx = Math.max(24, Math.min(W-24, e.clientX));
+    idle = 0;
+    var x = Math.max(24, Math.min(W-24, e.clientX));
+    /* 본문 컬럼 뒤로는 들어가지 않는다 — 어차피 가려서 안 보이고,
+       가운데는 적기가 가장 빽빽한 구간이라 세워두면 계속 격추당한다 */
+    var edge = (W - Math.min(1000, W))/2 - 26;
+    if(edge > 44){
+      var l = edge, r = W - edge;
+      if(x > l && x < r) x = (e.clientX < W/2) ? l : r;
+    }
+    player.tx = x;
     player.ty = Math.max(H*0.18, Math.min(H-40, e.clientY));
   }, { passive:true });
 
