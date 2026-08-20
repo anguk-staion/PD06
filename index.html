@@ -227,6 +227,19 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
 .f-help p:last-child{ margin-bottom:0; }
 .f-help b{ color:#0F6B3D; font-weight:800; }
 
+.pills{ display:flex; flex-wrap:wrap; gap:8px; }
+.pills + textarea{ margin-top:10px; }   /* 알약 버튼 아래 서술형 칸 */
+.pill{
+  font-family:var(--font); font-size:14px; font-weight:600; color:#2C4038;
+  background:#fff; border:2px solid var(--line); border-radius:0;
+  padding:9px 15px; cursor:pointer; transition:.12s;
+}
+.pill:hover{ border-color:var(--neon); }
+.pill[aria-pressed="true"]{
+  background:var(--neon); border-color:var(--neon); color:#04120D;
+  box-shadow:2px 2px 0 var(--neon-dark);
+}
+
 /* ── 프롬프트 ─────────────────────────────────── */
 .prompt-wrap{ margin-top:34px; }
 .prompt-bar{
@@ -353,29 +366,43 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
     <div class="card-mid"><div class="card-in">
 
       <div class="field">
-        <label class="f-label" for="fName">게임 이름</label>
-        <input type="text" id="fName" data-key="name" placeholder="예) 커피 룰렛 챌린지" />
+        <span class="f-label">게임 유형</span>
+        <div class="pills" data-key="type">
+          <button type="button" class="pill" aria-pressed="false">뽑기 · 룰렛</button>
+          <button type="button" class="pill" aria-pressed="false">반응속도 대결</button>
+          <button type="button" class="pill" aria-pressed="false">타이밍 맞추기</button>
+          <button type="button" class="pill" aria-pressed="false">기억력 게임</button>
+          <button type="button" class="pill" aria-pressed="false">O · X 퀴즈</button>
+          <button type="button" class="pill" aria-pressed="false">마구 누르기</button>
+          <button type="button" class="pill" aria-pressed="false">피하기 · 슈팅</button>
+          <button type="button" class="pill" aria-pressed="false">슬롯머신</button>
+          <button type="button" class="pill" aria-pressed="false">타자 대결</button>
+        </div>
+        <textarea id="fType" data-key="typeMore" rows="3"
+          placeholder="예) 원하는 유형이 없다면 여기에 직접 적어주세요."></textarea>
       </div>
 
       <div class="field">
-        <label class="f-label" for="fMode">게임 방식에 대해서 설명해주세요</label>
+        <label class="f-label" for="fMode">게임 방식 <span class="opt">선택 · 비워두어도 됩니다</span></label>
         <div class="f-help">
-          <p><b>이런 것들을 담아주세요</b> — 언제 즐기는 게임인지 · 어떤 방식인지 · 몇 명이 함께 하는지 · 승부를 어떻게 정하는지</p>
-          <p><b>방식 예시</b> 뽑기·룰렛 / 반응속도 대결 / 타이밍 맞추기 / 기억력 게임 / O·X 퀴즈 / 마구 누르기 / 피하기·슈팅 / 슬롯머신 / 타자 대결</p>
-          <p><b>인원 예시</b> 혼자 / 2명 / 3~5명 / 6명 이상</p>
+          <p><b>이런 것들을 담아주세요</b> — 언제 즐기는 게임인지 · 어떻게 진행되는지 · 승부를 어떻게 정하는지</p>
         </div>
         <textarea id="fMode" data-key="mode" rows="5"
-          placeholder="예) 점심 먹고 커피 내기를 정할 때 3~5명이 함께 하는 게임이야.&#10;순서대로 룰렛을 돌려서 나온 점수를 모으고, 점수가 가장 낮은 사람이 커피를 쏘는 방식이야.&#10;한 사람당 세 번씩 돌릴 수 있게 해줘."></textarea>
+          placeholder="예) 점심 먹고 커피 내기를 정할 때 하는 게임이야.&#10;순서대로 룰렛을 돌려서 나온 점수를 모으고, 점수가 가장 낮은 사람이 커피를 쏘는 방식이야."></textarea>
       </div>
 
       <div class="field" style="margin-bottom:0;">
-        <label class="f-label" for="fLook">게임 디자인</label>
-        <div class="f-help">
-          <p><b>이런 것들을 담아주세요</b> — 화면 분위기 · 색감 · 꼭 넣고 싶은 것</p>
-          <p><b>분위기 예시</b> 8비트 도트 / 레트로 오락실 / 네온 사이버 / 깔끔한 미니멀 / 손그림 낙서 / 우주 SF</p>
+        <span class="f-label">게임 디자인</span>
+        <div class="pills" data-key="look">
+          <button type="button" class="pill" aria-pressed="false">8비트 도트</button>
+          <button type="button" class="pill" aria-pressed="false">레트로 오락실</button>
+          <button type="button" class="pill" aria-pressed="false">네온 사이버</button>
+          <button type="button" class="pill" aria-pressed="false">깔끔한 미니멀</button>
+          <button type="button" class="pill" aria-pressed="false">손그림 낙서</button>
+          <button type="button" class="pill" aria-pressed="false">우주 SF</button>
         </div>
-        <textarea id="fLook" data-key="look" rows="5"
-          placeholder="예) 8비트 도트 느낌으로, 오락실 게임 화면처럼 만들어줘.&#10;초록색을 메인으로 쓰고, 결과 화면에 부서 이름이 크게 나왔으면 좋겠어."></textarea>
+        <textarea id="fLook" data-key="lookMore" rows="3"
+          placeholder="예) 초록색을 메인으로 쓰고, 결과 화면에 부서 이름이 크게 나왔으면 좋겠어."></textarea>
       </div>
 
       <div class="prompt-wrap">
@@ -485,30 +512,31 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
 /* ══════════ 1. 프롬프트 생성기 ══════════ */
 (function(){
   var out = document.getElementById('promptOut');
-  var state = { name:'', mode:'', look:'' };
-  /* 비워두면 이 예시가 대신 들어간다 — 입력칸 placeholder 와 같은 내용 */
+  var state = { type:'', typeMore:'', mode:'', look:'', lookMore:'' };
+  /* 비워두면 이 예시가 대신 들어간다 — 입력칸 안내와 같은 내용 */
   var ph = {
-    name: '커피 룰렛 챌린지',
-    mode: '점심 먹고 커피 내기를 정할 때 3~5명이 함께 하는 게임이야.\n' +
-          '순서대로 룰렛을 돌려서 나온 점수를 모으고, 점수가 가장 낮은 사람이 커피를 쏘는 방식이야.\n' +
-          '한 사람당 세 번씩 돌릴 수 있게 해줘.',
-    look: '8비트 도트 느낌으로, 오락실 게임 화면처럼 만들어줘.\n' +
-          '초록색을 메인으로 쓰고, 결과 화면에 부서 이름이 크게 나왔으면 좋겠어.'
+    type: '뽑기 · 룰렛',
+    mode: '점심 먹고 커피 내기를 정할 때 하는 게임이야.\n' +
+          '순서대로 룰렛을 돌려서 나온 점수를 모으고, 점수가 가장 낮은 사람이 커피를 쏘는 방식이야.',
+    look: '8비트 도트'
   };
   function v(k){ return state[k] ? state[k] : (ph[k] || ''); }
+  /* 알약 버튼 값과 그 아래 서술형 칸을 합친다 (서술형이 비어 있으면 버튼 값만) */
+  function pair(k, more){ return state[more] ? v(k) + '\n' + state[more] : v(k); }
 
   function build(){
     return [
 '너는 브라우저에서 바로 실행되는 미니게임을 만드는 게임 개발자야.',
 '아래 조건에 맞는 게임을 HTML 파일 하나로 완성해 줘.',
 '',
-'[게임 이름] ' + v('name'),
+'[게임 유형]',
+pair('type', 'typeMore'),
 '',
 '[게임 방식]',
 v('mode'),
 '',
 '[게임 디자인]',
-v('look'),
+pair('look', 'lookMore'),
 '',
 '[꼭 지켜야 할 것]',
 '1. HTML, CSS, JavaScript를 한 파일에 담고 외부 라이브러리 없이 혼자 실행되게 만들어 줘.',
@@ -530,6 +558,17 @@ v('look'),
 
   document.querySelectorAll('input[data-key], textarea[data-key]').forEach(function(el){
     el.addEventListener('input', function(){ state[el.dataset.key] = el.value.trim(); render(); });
+  });
+  /* 알약 버튼 — 같은 그룹 안에서 하나만 선택, 다시 누르면 해제 */
+  document.querySelectorAll('.pills[data-key]').forEach(function(group){
+    group.addEventListener('click', function(e){
+      var btn = e.target.closest('.pill'); if(!btn) return;
+      var on = btn.getAttribute('aria-pressed') === 'true';
+      group.querySelectorAll('.pill').forEach(function(b){ b.setAttribute('aria-pressed','false'); });
+      state[group.dataset.key] = on ? '' : btn.textContent.trim();
+      if(!on) btn.setAttribute('aria-pressed','true');
+      render();
+    });
   });
   render();
 
