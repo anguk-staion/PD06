@@ -369,8 +369,8 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
           <button type="button" class="pill" aria-pressed="false">피하기 · 슈팅</button>
           <button type="button" class="pill" aria-pressed="false">슬롯머신</button>
         </div>
-        <textarea id="fType" data-key="typeMore" rows="3"
-          placeholder="좋아하는 게임이나 영감을 받은 레퍼런스 게임이 있다면 자유롭게 적어주세요."></textarea>
+        <textarea id="fType" data-key="typeMore" data-clears="type" rows="3"
+          placeholder="위 선택지 이외에 좋아하는 게임이나 영감을 받은 레퍼런스 게임이 있다면 자유롭게 적어주세요."></textarea>
       </div>
 
       <div class="field">
@@ -493,11 +493,11 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
     look: '8비트 도트'
   };
   function v(k){ return state[k] ? state[k] : (ph[k] || ''); }
-  /* 게임 유형 = 알약 버튼(장르) + 서술형(레퍼런스 게임). 서로 보완 관계라 둘 다 넣는다. */
+  /* 게임 유형 = 알약 버튼(장르) 또는 서술형(레퍼런스 게임) 중 하나만 쓴다.
+     서술형에 적기 시작하면 버튼 선택이 풀리므로 둘이 동시에 채워지지 않는다. */
   function pair(k, more){
-    if(state[k] && state[more]) return state[k] + '\n' + '참고할 만한 게임 : ' + state[more];
     if(state[more]) return '참고할 만한 게임 : ' + state[more];
-    return v(k);                       /* 둘 다 비면 기본 예시 */
+    return v(k);                       /* 비어 있으면 기본 예시 */
   }
 
   function build(){
@@ -534,9 +534,26 @@ v('look'),
   }
   function render(){ out.value = build(); }
 
+  function clearPills(key){
+    var group = document.querySelector('.pills[data-key="' + key + '"]');
+    if(!group) return;
+    group.querySelectorAll('.pill').forEach(function(b){ b.setAttribute('aria-pressed','false'); });
+    state[key] = '';
+  }
   document.querySelectorAll('input[data-key], textarea[data-key]').forEach(function(el){
-    el.addEventListener('input', function(){ state[el.dataset.key] = el.value.trim(); render(); });
+    el.addEventListener('input', function(){
+      state[el.dataset.key] = el.value.trim();
+      /* 직접 적기 시작하면 위쪽 알약 버튼 선택은 해제한다 (둘 중 하나만) */
+      if(el.dataset.clears && state[el.dataset.key]) clearPills(el.dataset.clears);
+      render();
+    });
   });
+  /* 반대로 버튼을 고르면 아래 서술형 칸을 비운다 — 둘 중 하나만 유지 */
+  function clearMore(key){
+    var ta = document.querySelector('[data-clears="' + key + '"]');
+    if(!ta) return;
+    ta.value = ''; state[ta.dataset.key] = '';
+  }
   /* 알약 버튼 — 같은 그룹 안에서 하나만 선택, 다시 누르면 해제 */
   document.querySelectorAll('.pills[data-key]').forEach(function(group){
     group.addEventListener('click', function(e){
@@ -544,7 +561,7 @@ v('look'),
       var on = btn.getAttribute('aria-pressed') === 'true';
       group.querySelectorAll('.pill').forEach(function(b){ b.setAttribute('aria-pressed','false'); });
       state[group.dataset.key] = on ? '' : btn.textContent.trim();
-      if(!on) btn.setAttribute('aria-pressed','true');
+      if(!on){ btn.setAttribute('aria-pressed','true'); clearMore(group.dataset.key); }
       render();
     });
   });
