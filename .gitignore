@@ -24,3 +24,13 @@ Creating_commander.png
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# 동료 공유용 단독 실행 게임 — 이미지가 전부 내장돼 1.1MB 라 저장소에는 올리지 않는다
+# (index.html 배경 게임과는 별개의 파일. 다시 만들려면 스크래치패드의 game-template.html 사용)
+playday-game.html
+
+# 위 게임에서만 쓰는 원본 스프라이트 (index.html 은 Airplanes/enemy1/enemy2 만 쓴다)
+boss.png
+boss2.png
+enemy3.png
+enemy4.png
