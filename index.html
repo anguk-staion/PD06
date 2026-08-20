@@ -630,14 +630,27 @@ withDesc('look'),
   });
   render();
 
-  function copyText(text){
-    if(navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+  /* 복사는 3단계로 내려간다.
+     ① 클립보드 API  ② 프롬프트 칸을 직접 선택해 execCommand  ③ Ctrl+C 안내
+     사내망·정책·구버전 브라우저에서 ①이 거부되는 경우가 있어 실패하면 ②로 넘어간다.
+     ②는 화면에 실제로 보이는 textarea 를 쓴다 — 숨겨둔 요소는 선택이 막히는 브라우저가 있다. */
+  function selectOut(){
+    out.focus(); out.select();
+    try{ out.setSelectionRange(0, out.value.length); }catch(e){}
+  }
+  function copyPromptText(){
     return new Promise(function(res, rej){
-      var ta = document.createElement('textarea');
-      ta.value = text; ta.style.cssText = 'position:fixed;top:-9999px;opacity:0;';
-      document.body.appendChild(ta); ta.select();
-      try{ document.execCommand('copy'); res(); }catch(err){ rej(err); }
-      document.body.removeChild(ta);
+      function legacy(){
+        selectOut();
+        var ok = false;
+        try{ ok = document.execCommand('copy'); }catch(e){ ok = false; }
+        ok ? res() : rej();        /* execCommand 는 예외 대신 false 를 돌려주므로 반드시 확인 */
+      }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(out.value).then(res, legacy);
+      }else{
+        legacy();
+      }
     });
   }
   var toast = document.getElementById('toast'), timer;
@@ -648,11 +661,11 @@ withDesc('look'),
 
   var cp = document.getElementById('copyPrompt');
   cp.addEventListener('click', function(){
-    copyText(out.value).then(function(){
+    copyPromptText().then(function(){
       cp.textContent = '복사 완료!'; cp.classList.add('done'); say('프롬프트를 복사했습니다');
       setTimeout(function(){ cp.textContent = '프롬프트 복사하기'; cp.classList.remove('done'); }, 1800);
     }).catch(function(){
-      out.removeAttribute('readonly'); out.select(); say('Ctrl+C를 눌러 복사해주세요');
+      selectOut(); say('전체 선택했습니다. Ctrl+C를 눌러 복사해주세요');
     });
   });
 })();
