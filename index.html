@@ -378,7 +378,7 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
           <button type="button" class="pill" aria-pressed="false">슬롯머신</button>
           <button type="button" class="pill" aria-pressed="false">타자 대결</button>
         </div>
-        <textarea id="fType" data-key="typeMore" rows="3"
+        <textarea id="fType" data-key="typeMore" data-clears="type" rows="3"
           placeholder="예) 원하는 유형이 없다면 여기에 직접 적어주세요."></textarea>
       </div>
 
@@ -401,7 +401,7 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
           <button type="button" class="pill" aria-pressed="false">손그림 낙서</button>
           <button type="button" class="pill" aria-pressed="false">우주 SF</button>
         </div>
-        <textarea id="fLook" data-key="lookMore" rows="3"
+        <textarea id="fLook" data-key="lookMore" data-clears="look" rows="3"
           placeholder="예) 초록색을 메인으로 쓰고, 결과 화면에 부서 이름이 크게 나왔으면 좋겠어."></textarea>
       </div>
 
@@ -521,8 +521,13 @@ input::placeholder, textarea::placeholder{ color:#9DB2AA; }
     look: '8비트 도트'
   };
   function v(k){ return state[k] ? state[k] : (ph[k] || ''); }
-  /* 알약 버튼 값과 그 아래 서술형 칸을 합친다 (서술형이 비어 있으면 버튼 값만) */
-  function pair(k, more){ return state[more] ? v(k) + '\n' + state[more] : v(k); }
+  /* 알약 버튼 값과 그 아래 서술형 칸을 합친다.
+     직접 적으면 버튼 선택이 풀리므로 보통은 둘 중 하나만 채워져 있다. */
+  function pair(k, more){
+    if(state[k] && state[more]) return state[k] + '\n' + state[more];
+    if(state[more]) return state[more];
+    return v(k);                       /* 둘 다 비면 기본 예시 */
+  }
 
   function build(){
     return [
@@ -556,8 +561,19 @@ pair('look', 'lookMore'),
   }
   function render(){ out.value = build(); }
 
+  function clearPills(key){
+    var group = document.querySelector('.pills[data-key="' + key + '"]');
+    if(!group) return;
+    group.querySelectorAll('.pill').forEach(function(b){ b.setAttribute('aria-pressed','false'); });
+    state[key] = '';
+  }
   document.querySelectorAll('input[data-key], textarea[data-key]').forEach(function(el){
-    el.addEventListener('input', function(){ state[el.dataset.key] = el.value.trim(); render(); });
+    el.addEventListener('input', function(){
+      state[el.dataset.key] = el.value.trim();
+      /* 직접 적기 시작하면 위쪽 알약 버튼 선택은 해제한다 */
+      if(el.dataset.clears && state[el.dataset.key]) clearPills(el.dataset.clears);
+      render();
+    });
   });
   /* 알약 버튼 — 같은 그룹 안에서 하나만 선택, 다시 누르면 해제 */
   document.querySelectorAll('.pills[data-key]').forEach(function(group){
